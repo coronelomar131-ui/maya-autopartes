@@ -282,6 +282,19 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 .cl-tags{display:flex;gap:.28rem;flex-wrap:wrap}
 .cl-foot{display:flex;justify-content:flex-end;gap:.28rem;margin-top:.6rem}
 
+/* ─── FACTURAS ─── */
+.f-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:.85rem}
+.f-card{background:var(--w);border:1px solid var(--brd);border-radius:var(--r2);padding:1.2rem;box-shadow:var(--sh);transition:all .18s}
+.f-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:var(--sh2)}
+.fc-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:2px solid var(--brd)}
+.fc-num{font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--navy)}
+.fc-info{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.fci{display:flex;flex-direction:column}
+.fcl{font-family:var(--fm);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.3rem}
+.fcv{font-family:var(--fh);font-size:.9rem;font-weight:700;color:var(--navy)}
+.fc-amt{font-size:1.5rem;font-weight:800;color:var(--teal);margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px solid var(--brd)}
+.fc-acts{display:flex;gap:.6rem}
+
 /* ─── COMPAC STEPS ─── */
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:.85rem;margin-bottom:1.25rem}
 .step{background:var(--w);border:1px solid var(--brd);border-radius:var(--r2);padding:.95rem;box-shadow:var(--sh)}
@@ -437,6 +450,8 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="ni" onclick="goPage('clientes',this)"><span class="ni-ico">◉</span>Clientes<span class="ni-badge" id="nb-c">0</span></div>
     <div class="nav-sec">Operación</div>
     <div class="ni" onclick="goPage('entregas',this)"><span class="ni-ico">📋</span>Entregas<span class="ni-badge" id="nb-e">0</span></div>
+    <div class="nav-sec">Documentos</div>
+    <div class="ni" onclick="goPage('facturas',this)"><span class="ni-ico">📄</span>Facturas</div>
     <div class="nav-sec">Exportación</div>
     <div class="ni" onclick="goPage('compac',this)"><span class="ni-ico">⇄</span>Compac / Export</div>
     <div class="nav-sec">Sistema</div>
@@ -567,6 +582,22 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
         <div class="ei">◉</div><div class="et">Sin Clientes</div>
         <div class="es">Agrega clientes para agrupar su historial de ventas, saldo y datos de facturación.</div>
         <button class="btn btn-primary btn-sm" onclick="openClienteModal()">+ Agregar Cliente</button>
+      </div>
+    </div>
+
+    <!-- ══ FACTURAS ══ -->
+    <div class="page" id="page-facturas">
+      <div class="frow">
+        <div class="sbox"><input type="text" id="f-s" placeholder="Buscar por cliente, número…" oninput="renderF()"></div>
+        <select class="filt" id="f-estado" onchange="renderF()"><option value="">Todos los estados</option><option value="pagada">Pagada</option><option value="pendiente">Pendiente</option></select>
+        <input type="date" id="f-desde" onchange="renderF()" style="padding:.36rem .6rem;border:1px solid var(--brd);border-radius:var(--r);background:var(--w);font-family:var(--fm);font-size:.75rem;cursor:pointer">
+        <input type="date" id="f-hasta" onchange="renderF()" style="padding:.36rem .6rem;border:1px solid var(--brd);border-radius:var(--r);background:var(--w);font-family:var(--fm);font-size:.75rem;cursor:pointer">
+        <button class="btn btn-teal btn-sm" onclick="openCfgModal()">⚙ Configurar Empresa</button>
+      </div>
+      <div class="f-grid" id="f-g"></div>
+      <div class="empty" id="f-empty" style="display:none">
+        <div class="ei">📄</div><div class="et">Sin Facturas</div>
+        <div class="es">Las facturas se generan automáticamente a partir de las ventas marcadas como "Con Factura".</div>
       </div>
     </div>
 
@@ -769,6 +800,25 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
   </div>
 </div>
 
+<!-- ── MODAL CONFIG EMPRESA ── -->
+<div class="overlay" id="ov-cfg" onclick="clsOv('ov-cfg',event)">
+  <div class="modal">
+    <div class="modal-hd">Configuración de Empresa</div>
+    <div class="modal-bd">
+      <div class="field ff"><label>Nombre de la Empresa *</label><input type="text" id="cfg-nom" placeholder="Maya Autopartes S.A."></div>
+      <div class="field"><label>RFC</label><input type="text" id="cfg-rfc" placeholder="RFC000000000"></div>
+      <div class="field"><label>Teléfono</label><input type="tel" id="cfg-tel" placeholder="(000) 000-0000"></div>
+      <div class="field"><label>Email</label><input type="email" id="cfg-email" placeholder="contacto@empresa.com"></div>
+      <div class="field ff"><label>Dirección</label><textarea id="cfg-dir" rows="2" placeholder="Calle, colonia, ciudad, estado"></textarea></div>
+      <div class="field ff"><label>Logo URL (opcional)</label><input type="text" id="cfg-logo" placeholder="https://..."></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-cfg')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCfg()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -832,6 +882,7 @@ function goPage(name, el){
     ventas:   ()=>{btn.style.display='';btn.textContent='+ Nueva Venta';btn.onclick=openVentaModal},
     almacen:  ()=>{btn.style.display='';btn.textContent='+ Producto';   btn.onclick=openAlmModal},
     clientes: ()=>{btn.style.display='';btn.textContent='+ Cliente';    btn.onclick=openClienteModal},
+    facturas: ()=>{btn.style.display='';btn.textContent='⚙ Configurar'; btn.onclick=openCfgModal},
     compac:   ()=>{btn.style.display='';btn.textContent='⬇ Exportar';  btn.onclick=exportCompac},
     entregas: ()=>{btn.style.display='none'},
     usuarios: ()=>{btn.style.display='none'},
@@ -842,6 +893,7 @@ function goPage(name, el){
   if(name==='ventas')    renderV();
   if(name==='almacen')   renderA();
   if(name==='clientes')  renderC();
+  if(name==='facturas')  renderF();
   if(name==='compac')    rCompac();
   if(name==='usuarios')  renderUsuarios();
   if(name==='entregas')  renderEntregas();
@@ -1537,6 +1589,68 @@ window.addEventListener('keydown', e => {
     if(e.key === 'Backspace' || e.key === 'Delete') pinDel();
   }
 });
+
+// ═════════════════════════════════════
+// FACTURAS
+// ═════════════════════════════════════
+let cfg=JSON.parse(localStorage.getItem('ma4_cfg')||'{"nombre":"Maya Autopartes","rfc":"","tel":"","email":"","dir":"","logo":""}');
+function saveCfg(){
+  const g=id=>(document.getElementById(id)?.value||'').trim();
+  cfg={nombre:g('cfg-nom'),rfc:g('cfg-rfc'),tel:g('cfg-tel'),email:g('cfg-email'),dir:g('cfg-dir'),logo:g('cfg-logo')};
+  localStorage.setItem('ma4_cfg',JSON.stringify(cfg));
+  toast('✅ Configuración guardada');closeOv('ov-cfg');
+}
+function openCfgModal(){
+  const f=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};
+  f('cfg-nom',cfg.nombre);f('cfg-rfc',cfg.rfc);f('cfg-tel',cfg.tel);
+  f('cfg-email',cfg.email);f('cfg-dir',cfg.dir);f('cfg-logo',cfg.logo);
+  document.getElementById('ov-cfg').classList.add('on');
+}
+function renderF(){
+  const q=(document.getElementById('f-s')?.value||'').toLowerCase();
+  const estado=document.getElementById('f-estado')?.value||'';
+  const desde=document.getElementById('f-desde')?.value||'';
+  const hasta=document.getElementById('f-hasta')?.value||'';
+  const data=ventas.filter(v=>{
+    if(v.factura!=='con')return false;
+    if(q&&!`${v.cliente}${v.reporte}`.toLowerCase().includes(q))return false;
+    if(estado&&v.cobro!==estado)return false;
+    if(desde&&v.fecha<desde)return false;
+    if(hasta&&v.fecha>hasta)return false;
+    return true;
+  }).sort((a,b)=>new Date(b.fechaFactura||b.fecha)-new Date(a.fechaFactura||a.fecha));
+  document.getElementById('f-empty').style.display=!ventas.some(v=>v.factura==='con')?'flex':'none';
+  document.getElementById('f-g').innerHTML=data.length===0&&ventas.some(v=>v.factura==='con')
+    ?`<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted2);font-family:var(--fm);font-size:.7rem">Sin facturas para los filtros aplicados.</div>`
+    :data.map((v,i)=>{
+      const cl=clientes.find(c=>c.nombre===v.cliente);
+      const est=v.cobro==='cobrado'?'pagada':'pendiente';
+      const fcl=est==='pagada'?'var(--grn)':'var(--red)';
+      return`<div class="f-card">
+        <div class="fc-hd">
+          <div class="fc-num">#FAC-${String(v.id).slice(-6)}</div>
+          <span class="badge" style="background:${est==='pagada'?'rgba(25,135,84,.1)':'rgba(220,53,69,.1)'};color:${fcl};border:1px solid ${est==='pagada'?'rgba(25,135,84,.2)':'rgba(220,53,69,.2)'}">${est==='pagada'?'Pagada':'Pendiente'}</span>
+        </div>
+        <div class="fc-info">
+          <div class="fci"><span class="fcl">Cliente</span><span class="fcv">${v.cliente}</span></div>
+          <div class="fci"><span class="fcl">Fecha</span><span class="fcv">${v.fechaFactura||v.fecha}</span></div>
+        </div>
+        <div class="fc-amt">${fmt(v.total)}</div>
+        <div class="fc-acts">
+          <button class="btn btn-ghost btn-xs" onclick="viewFactura(${v.id})">👁 Ver</button>
+          <button class="btn btn-primary btn-xs" onclick="printFactura(${v.id})">🖨 Imprimir</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+function viewFactura(ventaId){const v=ventas.find(x=>x.id===ventaId);if(!v||v.factura!=='con')return;const html=genFacturaHTML(v);const w=window.open('','','width=900,height=1000');w.document.write(html);w.document.close()}
+function printFactura(ventaId){const v=ventas.find(x=>x.id===ventaId);if(!v||v.factura!=='con')return;const html=genFacturaHTML(v);const w=window.open('','','width=900,height=1000');w.document.write(html);w.document.close();setTimeout(()=>w.print(),500)}
+function genFacturaHTML(v){
+  const cl=clientes.find(c=>c.nombre===v.cliente);
+  const util=v.total-v.costo;
+  const margen=v.total>0?(util/v.total*100).toFixed(1):0;
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Factura ${v.id}</title><style>body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f5f5}.factura{max-width:900px;margin:0 auto;background:white;padding:40px;box-shadow:0 0 20px rgba(0,0,0,0.1)}.header{display:flex;justify-content:space-between;margin-bottom:40px;border-bottom:3px solid #1E4F7A;padding-bottom:20px}.logo-sec{flex:1}.logo-sec h1{color:#1E4F7A;margin:0;font-size:24px}.logo-sec p{color:#666;margin:5px 0;font-size:12px}.factura-num{text-align:right;flex:1}.factura-num h2{color:#1E4F7A;margin:0;font-size:20px}.factura-num p{color:#666;margin:5px 0;font-size:12px}.cliente-info{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:30px}.info-blk h3{color:#1E4F7A;font-size:13px;margin:0 0 10px 0;text-transform:uppercase;border-bottom:2px solid #3BBCD4;padding-bottom:5px}.info-blk p{margin:5px 0;font-size:12px;color:#333}table{width:100%;border-collapse:collapse;margin:30px 0}th{background:#1E4F7A;color:white;padding:10px;text-align:left;font-size:12px;text-transform:uppercase}td{padding:10px;border-bottom:1px solid #ddd;font-size:12px}tr:hover{background:#f9f9f9}.total-sec{display:flex;justify-content:flex-end;margin-top:20px}.totals{width:300px}.total-row{display:flex;justify-content:space-between;padding:8px 0;font-size:12px;border-bottom:1px solid #ddd}.total-row.final{border-top:2px solid #1E4F7A;border-bottom:2px solid #1E4F7A;font-weight:bold;font-size:14px;background:#f0f0f0;padding:10px 0}.footer{margin-top:40px;padding-top:20px;border-top:1px solid #ddd;text-align:center;color:#666;font-size:11px}</style></head><body><div class="factura"><div class="header"><div class="logo-sec">${cfg.logo?`<img src="${cfg.logo}" style="max-width:150px;max-height:60px">`:``}<h1>${cfg.nombre}</h1><p>RFC: ${cfg.rfc}</p><p>${cfg.dir}</p><p>Tel: ${cfg.tel} | Email: ${cfg.email}</p></div><div class="factura-num"><h2>FACTURA</h2><p>No: FAC-${String(v.id).slice(-6)}</p><p>Fecha: ${v.fechaFactura||v.fecha}</p><p>Vencimiento: ${v.fechaFactura?new Date(new Date(v.fechaFactura).getTime()+(cl?.diasCred||30)*24*60*60*1000).toISOString().slice(0,10):'—'}</p></div></div><div class="cliente-info"><div class="info-blk"><h3>Facturar A:</h3><p><strong>${v.cliente}</strong></p><p>RFC: ${cl?.rfc||'—'}</p><p>Dirección: ${cl?.direccion||'—'}</p><p>Teléfono: ${cl?.tel||'—'}</p><p>Email: ${cl?.email||'—'}</p></div><div class="info-blk"><h3>Información de Venta:</h3><p>Reporte: ${v.reporte}</p><p>Responsable: ${v.responsable}</p><p>Guía: ${v.guia||'—'}</p><p>Status: ${v.status==='A'?'Alto Costo':v.status==='B'?'Intermedio':'Bajo Costo'}</p><p>Cantidad: ${v.cantidad}</p></div></div><table><thead><tr><th>Concepto</th><th style="text-align:right">Cantidad</th><th style="text-align:right">Precio Unitario</th><th style="text-align:right">Total</th></tr></thead><tbody><tr><td>Venta de Autopartes</td><td style="text-align:right">${v.cantidad}</td><td style="text-align:right">${fmt(v.total/(v.cantidad||1))}</td><td style="text-align:right">${fmt(v.total)}</td></tr></tbody></table><div class="total-sec"><div class="totals"><div class="total-row"><span>Subtotal:</span><span>${fmt(v.total)}</span></div><div class="total-row"><span>IVA (0%):</span><span>${fmt(0)}</span></div><div class="total-row final"><span>TOTAL:</span><span>${fmt(v.total)}</span></div><div class="total-row" style="margin-top:10px;color:#666;border:none"><span>Costo:</span><span>${fmt(v.costo)}</span></div><div class="total-row" style="color:var(--grn);border:none"><span>Utilidad:</span><span>${fmt(util)} (${margen}%)</span></div></div></div><div class="footer"><p>Estado: ${v.cobro==='cobrado'?'<strong style="color:#198754">PAGADA</strong>':'<strong style="color:#dc3545">PENDIENTE</strong>'}</p><p>Esta es una factura generada por el sistema Maya Autopartes</p></div></div></body></html>`;
+}
 
 // INIT
 initLogin();
