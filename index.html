@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Maya Autopartes</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Barlow+Condensed:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -623,19 +624,39 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 // ═════════════════════════════════════
 // DATA
 // ═════════════════════════════════════
+// SUPABASE (NO BLOQUEANTE)
+const {createClient}=window.supabase;
+const supabase=createClient('https://nqpjeaarqbwciydbvptl.supabase.co','sb_publishable_JDcJg8z4SxuDHCdc0U7NcA_rrWyophH');
+
 let ventas   = JSON.parse(localStorage.getItem('ma4_v')||'[]');
 let almacen  = JSON.parse(localStorage.getItem('ma4_a')||'[]');
 let clientes = JSON.parse(localStorage.getItem('ma4_c')||'[]');
 let eVId=null,eAId=null,eCId=null;
 let vSC='fecha',vSD=-1,vPg=1;
-let almView='cards'; // 'cards' or 'table'
+let almView='cards';
 const PG=15;
 
 function sv(){
   localStorage.setItem('ma4_v',JSON.stringify(ventas));
   localStorage.setItem('ma4_a',JSON.stringify(almacen));
   localStorage.setItem('ma4_c',JSON.stringify(clientes));
+  // GUARDAR EN SUPABASE EN BACKGROUND (NO BLOQUEA)
+  ventas.forEach(v=>{supabase.from('ventas').upsert({...v,id:String(v.id)}).catch(e=>{})});
+  almacen.forEach(a=>{supabase.from('almacen').upsert({...a,id:String(a.id)}).catch(e=>{})});
+  clientes.forEach(c=>{supabase.from('clientes').upsert({...c,id:String(c.id)}).catch(e=>{})});
 }
+
+// CARGAR DESDE SUPABASE EN BACKGROUND (SIN BLOQUEAR)
+setTimeout(()=>{
+  Promise.all([supabase.from('ventas').select('*'),supabase.from('almacen').select('*'),supabase.from('clientes').select('*')]).then(([v,a,c])=>{
+    if(v.data?.length>0)ventas=v.data;
+    if(a.data?.length>0)almacen=a.data;
+    if(c.data?.length>0)clientes=c.data;
+    badges();renderV();renderA();renderC();renderF();
+    // LISTENERS TIEMPO REAL
+    supabase.channel('changes').on('*',()=>{sv();location.reload()}).subscribe();
+  }).catch(e=>{console.log('Supabase offline - usando localStorage')});
+},500);
 
 // ═════════════════════════════════════
 // SIDEBAR NAV  — closes on mobile after selecting
