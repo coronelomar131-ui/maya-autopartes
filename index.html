@@ -653,8 +653,6 @@ setTimeout(()=>{
     if(a.data?.length>0)almacen=a.data;
     if(c.data?.length>0)clientes=c.data;
     badges();renderV();renderA();renderC();renderF();
-    // LISTENERS TIEMPO REAL
-    supabase.channel('changes').on('*',()=>{sv();location.reload()}).subscribe();
   }).catch(e=>{console.log('Supabase offline - usando localStorage')});
 },500);
 
