@@ -397,6 +397,20 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="login-title">Maya ERP</div>
     <div class="login-sub">AUTOPARTES · ACCESO SEGURO</div>
     <div class="login-user-sel"><select id="loginUserSel" onchange="loginSelectUser()"><option value="">— Seleccionar usuario —</option></select></div>
+    <script>
+      // Ensure default admin user exists immediately
+      try {
+        let storedUsers = localStorage.getItem('ma4_u');
+        let parsedUsers = storedUsers ? JSON.parse(storedUsers) : null;
+        if(!parsedUsers || !Array.isArray(parsedUsers) || parsedUsers.length === 0){
+          const defaultAdmin = [{id:1,nombre:'Administrador',usuario:'admin',pin:'1234',rol:'admin',activo:true}];
+          localStorage.setItem('ma4_u', JSON.stringify(defaultAdmin));
+        }
+      } catch(e) {
+        console.error('Error initializing users:', e);
+        localStorage.setItem('ma4_u', JSON.stringify([{id:1,nombre:'Administrador',usuario:'admin',pin:'1234',rol:'admin',activo:true}]));
+      }
+    </script>
     <div class="pin-dots" id="pinDots">
       <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
       <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
@@ -1482,8 +1496,24 @@ function printEntrega(id){
 // ═════════════════════════════════════
 let pinBuffer='';
 function initLogin(){
+  // Ensure usuarios is always an array
+  if(!usuarios || !Array.isArray(usuarios) || usuarios.length === 0){
+    usuarios=[{id:1,nombre:'Administrador',usuario:'admin',pin:'1234',rol:'admin',activo:true}];
+    localStorage.setItem('ma4_u',JSON.stringify(usuarios));
+    console.log('Created default admin user');
+  }
+
   const sel=document.getElementById('loginUserSel');
-  sel.innerHTML='<option value="">— Seleccionar usuario —</option>'+usuarios.filter(u=>u.activo).map(u=>`<option value="${u.usuario}">${u.nombre} (${u.rol})</option>`).join('');
+  if(!sel) {
+    console.error('loginUserSel element not found');
+    return;
+  }
+
+  const activeUsers = usuarios.filter(u=>u.activo);
+  console.log('Active users:', activeUsers);
+
+  sel.innerHTML='<option value="">— Seleccionar usuario —</option>'+activeUsers.map(u=>`<option value="${u.usuario}">${u.nombre} (${u.rol})</option>`).join('');
+
   document.getElementById('loginScreen').style.display='flex';
   const m = document.querySelector('.main-layout'); if(m) m.style.display='none';
   document.getElementById('sb').style.display='none';
