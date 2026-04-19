@@ -367,6 +367,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="tb-right">
       <div class="clk" id="clkEl">—</div>
       <button class="btn btn-primary btn-sm" id="mainBtn" onclick="openVentaModal()">+ Nueva Venta</button>
+      <button class="btn btn-ghost btn-sm" id="usersBtn" onclick="openUsersModal()" style="display:none">👤 Usuarios</button>
     </div>
   </div>
 
@@ -1200,8 +1201,8 @@ showAdminPanel();
 // USUARIOS - Mostrar botón solo para admin
 function showAdminPanel(){
   if(sesionActual && sesionActual.rol==='admin'){
-    document.getElementById('nav-admin').style.display='block';
-    document.getElementById('ni-users').style.display='flex';
+    const btn = document.getElementById('usersBtn');
+    if(btn) btn.style.display='block';
   }
 }
 
