@@ -367,7 +367,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="tb-right">
       <div class="clk" id="clkEl">—</div>
       <button class="btn btn-primary btn-sm" id="mainBtn" onclick="openVentaModal()">+ Nueva Venta</button>
-      <button class="btn btn-ghost btn-sm" id="usersBtn" onclick="openUsersModal()" style="display:none">👤 Usuarios</button>
+      <button class="btn btn-ghost btn-sm" id="usersBtn" onclick="goPage('usuarios');renderUsuarios()" style="display:none">👤 Usuarios</button>
       <button class="btn btn-ghost btn-sm" id="logoutBtn" onclick="doLogout()">🚪 Salir</button>
     </div>
   </div>
@@ -385,7 +385,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
           </div>
           <div class="field" style="margin-bottom:1rem">
             <label>PIN (4 dígitos)</label>
-            <input type="password" id="login-pin" placeholder="0000" maxlength="4">
+            <input type="password" id="login-pin" placeholder="0000" maxlength="4" onkeypress="if(event.key==='Enter') doLogin()">
           </div>
           <div id="login-error" style="color:var(--red);font-size:0.85rem;margin-bottom:0.8rem;display:none"></div>
           <button class="btn btn-primary" style="width:100%" onclick="doLogin()">🔓 Ingresar</button>
@@ -1242,9 +1242,9 @@ function viewFactura(id){const v=ventas.find(x=>x.id===id);if(!v)return;const ht
 function printFactura(id){viewFactura(id);setTimeout(()=>{window.print()},500)}
 if(document.getElementById('f-g')){document.getElementById('pgTitle').textContent='Facturas';renderF()}
 
-// Restaurar sesión si existe
+// Restaurar sesión si existe y es válida
 const savedSession = localStorage.getItem('sesionActual');
-if(savedSession){
+if(savedSession && usuarios.length > 0){
   try {
     sesionActual = JSON.parse(savedSession);
     const userStillExists = usuarios.find(u => u.id === sesionActual.id && u.activo);
@@ -1258,8 +1258,8 @@ if(savedSession){
   }
 }
 
-// Si no hay sesión, mostrar login
-if(!sesionActual){
+// Si no hay sesión válida, mostrar login
+if(!sesionActual || usuarios.length === 0){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.getElementById('page-login').classList.add('on');
 }
@@ -1386,6 +1386,11 @@ function doLogout(){
 
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.getElementById('page-login').classList.add('on');
+
+  // Limpiar campos de login
+  document.getElementById('login-usuario').value = '';
+  document.getElementById('login-pin').value = '';
+  document.getElementById('login-error').style.display = 'none';
 
   toast('👋 Sesión cerrada');
 }
