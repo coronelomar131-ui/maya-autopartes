@@ -1206,7 +1206,12 @@ function showAdminPanel(){
 }
 
 function openUsersModal(){
-  document.getElementById('ov-users').classList.add('on');
+  const modal = document.getElementById('ov-users');
+  if(modal){
+    modal.classList.add('on');
+  } else {
+    alert('Modal no encontrado');
+  }
 }
 
 function saveNewUser(){
