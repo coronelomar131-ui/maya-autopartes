@@ -1202,9 +1202,97 @@ function openUsersModal(){
   };
 
   usuarios.push(newUser);
-  localStorage.setItem('ma4_u', JSON.stringify(usuarios));
+  sv(); // Guarda en localStorage
+  syncUsersToSupabase(); // Sincroniza a Supabase
   toast('✅ Usuario creado: ' + usuario);
 }
+
+// ═════════════════════════════════════
+// SUPABASE SYNC FOR USERS
+// ═════════════════════════════════════
+let sbClient = null;
+let sbReady = false;
+
+async function initSupabaseSimple(){
+  try {
+    const { createClient } = window.supabase;
+    if(!createClient){
+      console.log('Supabase no cargó');
+      return;
+    }
+
+    sbClient = createClient(
+      'https://cqyxyyqcioqygeikmuxa.supabase.co',
+      'sb_publishable_H8PKOeQ4YMRtR4ZUb3CQDg_48hNW8dD'
+    );
+
+    sbReady = true;
+    console.log('✅ Supabase inicializado');
+
+    // Cargar usuarios desde Supabase
+    await loadUsersFromSupabase();
+
+    // Configurar listener real-time
+    setupUsersListener();
+  } catch(e){
+    console.error('Supabase init error:', e);
+  }
+}
+
+async function loadUsersFromSupabase(){
+  if(!sbClient) return;
+  try {
+    const { data } = await sbClient.from('usuarios').select('data').limit(1);
+    if(data && data.length > 0 && data[0].data){
+      usuarios = data[0].data;
+      console.log('✅ Usuarios cargados desde Supabase');
+    }
+  } catch(e){
+    console.error('Error cargando usuarios:', e);
+  }
+}
+
+async function syncUsersToSupabase(){
+  if(!sbClient || !sbReady) return;
+  try {
+    await sbClient.from('usuarios').upsert(
+      { id: 1, data: usuarios },
+      { onConflict: 'id' }
+    );
+    console.log('✅ Usuarios sincronizados');
+  } catch(e){
+    console.error('Error sincronizando:', e);
+  }
+}
+
+function setupUsersListener(){
+  if(!sbClient) return;
+  try {
+    sbClient
+      .channel('usuarios-sync')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'usuarios' },
+        (payload) => {
+          if(payload.new && payload.new.data){
+            usuarios = payload.new.data;
+            console.log('✅ Usuarios actualizados en tiempo real');
+          }
+        }
+      )
+      .subscribe();
+  } catch(e){
+    console.error('Error en listener:', e);
+  }
+}
+
+// Inicializar Supabase cuando cargue
+window.addEventListener('load', () => {
+  setTimeout(initSupabaseSimple, 500);
+});
 </script>
+
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </body>
 </html>
