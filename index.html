@@ -338,8 +338,8 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="ni" onclick="goPage('clientes',this)"><span class="ni-ico">◉</span>Clientes<span class="ni-badge" id="nb-c">0</span></div>
     <div class="nav-sec">Documentos</div>
     <div class="ni" onclick="goPage('facturas',this)"><span class="ni-ico">📄</span>Facturas</div>
-    <div class="nav-sec" id="nav-admin">Admin</div>
-    <div class="ni" id="ni-usuarios" onclick="goPage('usuarios',this)"><span class="ni-ico">👤</span>Usuarios</div>
+    <div class="nav-sec" id="nav-admin" style="display:none">Admin</div>
+    <div class="ni" id="ni-users" onclick="openUsersModal()" style="display:none"><span class="ni-ico">👤</span>Crear Usuario</div>
     <div class="nav-sec">Exportación</div>
     <div class="ni" onclick="goPage('compac',this)"><span class="ni-ico">⇄</span>Compac / Export</div>
   </nav>
@@ -477,19 +477,6 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       </div>
       <div class="f-grid" id="f-g"></div>
       <div class="empty" id="f-empty" style="display:none"><div class="ei">📄</div><div class="et">Sin Facturas</div><div class="es">Las facturas se generan de ventas con "Con Factura".</div></div>
-    </div>
-
-    <!-- ══ USUARIOS ══ -->
-    <div class="page" id="page-usuarios">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.55rem">
-        <h2 style="margin:0">Gestión de Usuarios</h2>
-        <button class="btn btn-primary btn-sm" onclick="openUserModal()">+ Nuevo Usuario</button>
-      </div>
-      <div class="tcard">
-        <div class="twrap"><table><thead><tr>
-          <th>Nombre</th><th>Usuario</th><th>Rol</th><th>Estado</th><th></th>
-        </tr></thead><tbody id="users-tb"></tbody></table></div>
-      </div>
     </div>
 
     <!-- ══ COMPAC ══ -->
@@ -632,32 +619,6 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
   </div>
 </div>
 
-<!-- USUARIOS MODAL -->
-<div class="overlay" id="ov-u" onclick="clsOv('ov-u',event)">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-hd">
-      <h3 id="uu-title">Nuevo Usuario</h3>
-      <button class="btn btn-ghost" onclick="closeOv('ov-u')">✕</button>
-    </div>
-    <div class="modal-bd">
-      <input type="hidden" id="uu-id">
-      <div class="field"><label>Nombre Completo</label><input type="text" id="uu-nom" placeholder="Juan Pérez"></div>
-      <div class="field"><label>Usuario (login)</label><input type="text" id="uu-usr" placeholder="juan.perez"></div>
-      <div class="field"><label>PIN (4 dígitos)</label><input type="text" id="uu-pin" placeholder="1234" maxlength="4"></div>
-      <div class="field"><label>Rol</label>
-        <select id="uu-rol">
-          <option value="user">Usuario Normal</option>
-          <option value="admin">Administrador</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeOv('ov-u')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveUser()">💾 Guardar</button>
-    </div>
-  </div>
-</div>
-
 <div id="toast"></div>
 
 <script>
@@ -681,8 +642,8 @@ function sv(){
 // ═════════════════════════════════════
 // SIDEBAR NAV  — closes on mobile after selecting
 // ═════════════════════════════════════
-const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',usuarios:'Usuarios',compac:'Exportar / Compac'};
-const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',usuarios:'Maya Autopartes / Usuarios',compac:'Maya Autopartes / Exportar'};
+const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',compac:'Exportar / Compac'};
+const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',compac:'Maya Autopartes / Exportar'};
 
 function goPage(name, el){
   // 1. swap pages
@@ -702,7 +663,6 @@ function goPage(name, el){
     almacen:  ()=>{btn.textContent='+ Producto';   btn.onclick=openAlmModal},
     clientes: ()=>{btn.textContent='+ Cliente';    btn.onclick=openClienteModal},
     facturas: ()=>{btn.textContent='⚙ Configurar'; btn.onclick=openCfgModal},
-    usuarios: ()=>{btn.textContent='+ Nuevo Usuario'; btn.onclick=openUserModal},
     compac:   ()=>{btn.textContent='⬇ Exportar';  btn.onclick=exportCompac},
   };
   if(acts[name]) acts[name]();
@@ -711,7 +671,6 @@ function goPage(name, el){
   if(name==='ventas')    renderV();
   if(name==='almacen')   renderA();
   if(name==='clientes')  renderC();
-  if(name==='usuarios')  renderUsers();
   if(name==='facturas')  renderF();
   if(name==='compac')    rCompac();
   badges();
@@ -741,9 +700,6 @@ function badges(){
   document.getElementById('ss-c').textContent=clientes.length;
   document.getElementById('ss-p').textContent=pen;
   document.getElementById('ss-a').textContent=alrt;
-
-  // Show usuarios section only for admins
-  showUsersSection();
 }
 
 // ═════════════════════════════════════
@@ -1214,316 +1170,41 @@ function printFactura(id){viewFactura(id);setTimeout(()=>{window.print()},500)}
 if(document.getElementById('f-g')){document.getElementById('pgTitle').textContent='Facturas';renderF()}
 
 badges(); rDash();
+showAdminPanel();
 
-// ═════════════════════════════════════
-// USUARIOS MANAGEMENT
-// ═════════════════════════════════════
-function showUsersSection(){
-  const ni = document.getElementById('ni-usuarios');
-  const nav = document.getElementById('nav-admin');
-  if(sesionActual && sesionActual.rol === 'admin'){
-    if(ni) ni.style.display = 'flex';
-    if(nav) nav.style.display = 'block';
+// USUARIOS - Mostrar botón solo para admin
+function showAdminPanel(){
+  if(sesionActual && sesionActual.rol==='admin'){
+    document.getElementById('nav-admin').style.display='block';
+    document.getElementById('ni-users').style.display='flex';
   }
 }
 
-function renderUsers(){
-  const tb = document.getElementById('users-tb');
-  if(!tb) return;
-  tb.innerHTML = usuarios.map(u => `
-    <tr>
-      <td>${u.nombre}</td>
-      <td>${u.usuario}</td>
-      <td>${u.rol}</td>
-      <td><span style="color:${u.activo?'var(--grn)':'var(--red)'}">${u.activo?'Activo':'Inactivo'}</span></td>
-      <td style="text-align:right">
-        <button class="btn btn-ghost btn-xs" onclick="editUser(${u.id})">Editar</button>
-        <button class="btn btn-danger btn-xs" onclick="deleteUser(${u.id})">Eliminar</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function openUserModal(){
-  document.getElementById('uu-nom').value = '';
-  document.getElementById('uu-usr').value = '';
-  document.getElementById('uu-pin').value = '';
-  document.getElementById('uu-rol').value = 'user';
-  document.getElementById('uu-id').value = '';
-  document.getElementById('ov-u').classList.add('on');
-}
-
-function editUser(id){
-  const u = usuarios.find(x => x.id === id);
-  if(!u) return;
-  document.getElementById('uu-nom').value = u.nombre;
-  document.getElementById('uu-usr').value = u.usuario;
-  document.getElementById('uu-pin').value = u.pin;
-  document.getElementById('uu-rol').value = u.rol;
-  document.getElementById('uu-id').value = id;
-  document.getElementById('ov-u').classList.add('on');
-}
-
-function saveUser(){
-  const id = document.getElementById('uu-id').value || null;
-  const nombre = document.getElementById('uu-nom').value.trim();
-  const usuario = document.getElementById('uu-usr').value.trim();
-  const pin = document.getElementById('uu-pin').value.trim();
-  const rol = document.getElementById('uu-rol').value;
-
-  if(!nombre || !usuario || !pin){
-    toast('⚠ Completa todos los campos');
+function openUsersModal(){
+  const nombre = prompt('Nombre del nuevo usuario:');
+  if(!nombre) return;
+  const usuario = prompt('Usuario (login):');
+  if(!usuario) return;
+  const pin = prompt('PIN (4 dígitos):');
+  if(!pin || pin.length!==4 || isNaN(pin)){
+    toast('⚠ PIN debe ser 4 dígitos');
     return;
   }
+  const rol = confirm('¿Hacer admin? (OK=Admin, Cancelar=Usuario Normal)') ? 'admin' : 'user';
 
-  if(id){
-    // Editar existente
-    const u = usuarios.find(x => x.id === parseInt(id));
-    if(u){
-      u.nombre = nombre;
-      u.usuario = usuario;
-      u.pin = pin;
-      u.rol = rol;
-      u.activo = true;
-    }
-  } else {
-    // Crear nuevo
-    const newId = Math.max(...usuarios.map(u => u.id), 0) + 1;
-    usuarios.push({
-      id: newId,
-      nombre,
-      usuario,
-      pin,
-      rol,
-      activo: true
-    });
-  }
+  const newUser = {
+    id: Math.max(...usuarios.map(u=>u.id), 0) + 1,
+    nombre,
+    usuario,
+    pin,
+    rol,
+    activo: true
+  };
 
-  sv();
-  renderUsers();
-  closeOv('ov-u');
-  toast('✅ Usuario guardado');
-}
-
-function deleteUser(id){
-  if(!confirm('¿Eliminar este usuario?')) return;
-  usuarios = usuarios.filter(u => u.id !== id);
-  sv();
-  renderUsers();
-  toast('✅ Usuario eliminado');
-}
-
-</script>
-
-<!-- Supabase for Real-time Sync -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-// Supabase Configuration
-const SUPABASE_URL = 'https://cqyxyyqcioqygeikmuxa.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_H8PKOeQ4YMRtR4ZUb3CQDg_48hNW8dD';
-if (!window.supabase) {
-  console.error('Supabase library not loaded');
-} else {
-  window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-}
-
-let supabaseReady = false;
-let subscriptions = [];
-
-// Initialize Supabase tables and set up real-time sync
-async function initSupabase() {
-  try {
-    // Create tables if they don't exist
-    const tablesToCreate = [
-      {
-        name: 'ventas',
-        create: `CREATE TABLE IF NOT EXISTS ventas (
-          id BIGINT PRIMARY KEY DEFAULT gen_random_bigint(),
-          data JSONB NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        )`
-      },
-      {
-        name: 'almacen',
-        create: `CREATE TABLE IF NOT EXISTS almacen (
-          id BIGINT PRIMARY KEY DEFAULT gen_random_bigint(),
-          data JSONB NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        )`
-      },
-      {
-        name: 'clientes',
-        create: `CREATE TABLE IF NOT EXISTS clientes (
-          id BIGINT PRIMARY KEY DEFAULT gen_random_bigint(),
-          data JSONB NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        )`
-      },
-      {
-        name: 'entregas',
-        create: `CREATE TABLE IF NOT EXISTS entregas (
-          id BIGINT PRIMARY KEY DEFAULT gen_random_bigint(),
-          data JSONB NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        )`
-      }
-    ];
-
-    // Try to fetch from tables to verify they exist
-    // If they don't, data will come from localStorage
-    try {
-      const { data: ventasData } = await window.supabaseClient.from('ventas').select('*').limit(1);
-      if (ventasData !== null) {
-        console.log('✅ Supabase tables exist');
-        supabaseReady = true;
-
-        // Load data from Supabase
-        await loadFromSupabase();
-
-        // Set up real-time listeners
-        setupRealtimeListeners();
-      }
-    } catch (e) {
-      console.log('Tables need to be created via Supabase console');
-      supabaseReady = false;
-    }
-  } catch (error) {
-    console.error('Supabase init error:', error);
-    supabaseReady = false;
-  }
-}
-
-// Load data from Supabase
-async function loadFromSupabase() {
-  try {
-    const { data: v } = await window.supabaseClient.from('ventas').select('data').limit(1);
-    if (v && v.length > 0 && v[0].data) ventas = v[0].data;
-
-    const { data: a } = await window.supabaseClient.from('almacen').select('data').limit(1);
-    if (a && a.length > 0 && a[0].data) almacen = a[0].data;
-
-    const { data: c } = await window.supabaseClient.from('clientes').select('data').limit(1);
-    if (c && c.length > 0 && c[0].data) clientes = c[0].data;
-
-    const { data: e } = await window.supabaseClient.from('entregas').select('data').limit(1);
-    if (e && e.length > 0 && e[0].data) entregas = e[0].data;
-
-    const { data: u } = await window.supabaseClient.from('usuarios').select('data').limit(1);
-    if (u && u.length > 0 && u[0].data) usuarios = u[0].data;
-
-    console.log('✅ Data loaded from Supabase');
-  } catch (error) {
-    console.error('Error loading from Supabase:', error);
-  }
-}
-
-// Set up real-time listeners
-function setupRealtimeListeners() {
-  try {
-    // Listen to ventas changes
-    const ventasSub = supabase
-      .channel('ventas-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ventas' }, payload => {
-        if (payload.new && payload.new.data) {
-          ventas = payload.new.data;
-          renderV();
-          console.log('✅ Ventas synced');
-        }
-      })
-      .subscribe();
-    subscriptions.push(ventasSub);
-
-    // Listen to almacen changes
-    const almacenSub = supabase
-      .channel('almacen-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'almacen' }, payload => {
-        if (payload.new && payload.new.data) {
-          almacen = payload.new.data;
-          renderA();
-          console.log('✅ Almacen synced');
-        }
-      })
-      .subscribe();
-    subscriptions.push(almacenSub);
-
-    // Listen to clientes changes
-    const clientesSub = supabase
-      .channel('clientes-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, payload => {
-        if (payload.new && payload.new.data) {
-          clientes = payload.new.data;
-          renderC();
-          console.log('✅ Clientes synced');
-        }
-      })
-      .subscribe();
-    subscriptions.push(clientesSub);
-
-    // Listen to entregas changes
-    const entregasSub = supabase
-      .channel('entregas-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'entregas' }, payload => {
-        if (payload.new && payload.new.data) {
-          entregas = payload.new.data;
-          console.log('✅ Entregas synced');
-        }
-      })
-      .subscribe();
-    subscriptions.push(entregasSub);
-
-    // Listen to usuarios changes
-    const usuariosSub = supabase
-      .channel('usuarios-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, payload => {
-        if (payload.new && payload.new.data) {
-          usuarios = payload.new.data;
-          console.log('✅ Usuarios synced');
-        }
-      })
-      .subscribe();
-    subscriptions.push(usuariosSub);
-
-    console.log('✅ Real-time listeners setup');
-  } catch (error) {
-    console.error('Error setting up listeners:', error);
-  }
-}
-
-// Override save function to use Supabase
-const originalSv = sv;
-sv = async function() {
-  // Save to localStorage always (backup)
-  localStorage.setItem('ma4_v', JSON.stringify(ventas));
-  localStorage.setItem('ma4_a', JSON.stringify(almacen));
-  localStorage.setItem('ma4_c', JSON.stringify(clientes));
-  localStorage.setItem('ma4_ent', JSON.stringify(entregas));
+  usuarios.push(newUser);
   localStorage.setItem('ma4_u', JSON.stringify(usuarios));
-
-  // Save to Supabase if ready
-  if (supabaseReady) {
-    try {
-      // Upsert data (insert or update)
-      await window.supabaseClient.from('ventas').upsert({ id: 1, data: ventas }, { onConflict: 'id' });
-      await window.supabaseClient.from('almacen').upsert({ id: 1, data: almacen }, { onConflict: 'id' });
-      await window.supabaseClient.from('clientes').upsert({ id: 1, data: clientes }, { onConflict: 'id' });
-      await window.supabaseClient.from('entregas').upsert({ id: 1, data: entregas }, { onConflict: 'id' });
-      await window.supabaseClient.from('usuarios').upsert({ id: 1, data: usuarios }, { onConflict: 'id' });
-      console.log('✅ Saved to Supabase');
-    } catch (error) {
-      console.error('Supabase save error:', error);
-      // Silently fail - data is in localStorage
-    }
-  }
-};
-
-// Initialize Supabase when page loads
-initSupabase();
+  toast('✅ Usuario creado: ' + usuario);
+}
 </script>
-
 </body>
 </html>
