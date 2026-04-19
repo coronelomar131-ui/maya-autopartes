@@ -368,13 +368,33 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       <div class="clk" id="clkEl">—</div>
       <button class="btn btn-primary btn-sm" id="mainBtn" onclick="openVentaModal()">+ Nueva Venta</button>
       <button class="btn btn-ghost btn-sm" id="usersBtn" onclick="openUsersModal()" style="display:none">👤 Usuarios</button>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn" onclick="doLogout()">🚪 Salir</button>
     </div>
   </div>
 
   <div class="content">
 
+    <!-- ══ LOGIN ══ -->
+    <div class="page on" id="page-login">
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)">
+        <div class="modal" style="max-width:400px;margin:0">
+          <div class="modal-hd">👤 Acceso al Sistema</div>
+          <div class="field" style="margin-bottom:1rem">
+            <label>Usuario</label>
+            <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" autofocus>
+          </div>
+          <div class="field" style="margin-bottom:1rem">
+            <label>PIN (4 dígitos)</label>
+            <input type="password" id="login-pin" placeholder="0000" maxlength="4">
+          </div>
+          <div id="login-error" style="color:var(--red);font-size:0.85rem;margin-bottom:0.8rem;display:none"></div>
+          <button class="btn btn-primary" style="width:100%" onclick="doLogin()">🔓 Ingresar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ DASHBOARD ══ -->
-    <div class="page on" id="page-dashboard">
+    <div class="page" id="page-dashboard">
       <div class="cbanner">
         <div class="cb-ico">⇄</div>
         <div class="cb-inf">
@@ -513,6 +533,30 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
           <p>• Haz un <strong>respaldo de Compac</strong> antes de importar por primera vez.</p>
           <p>• Los campos de Status A, B, C se exportan tal cual para que los mapees en Compac como categorías internas.</p>
         </div>
+      </div>
+    </div>
+
+    <!-- ══ USUARIOS (ADMIN) ══ -->
+    <div class="page" id="page-usuarios">
+      <div class="topbar">
+        <div class="tb-left"><h3>👥 Gestión de Usuarios</h3></div>
+        <div class="tb-right">
+          <button class="btn btn-primary btn-sm" onclick="openUsersModal()">➕ Nuevo Usuario</button>
+        </div>
+      </div>
+      <div style="padding:1rem">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="background:var(--s2);border-bottom:2px solid var(--brd)">
+              <th style="padding:0.8rem;text-align:left">Nombre</th>
+              <th style="padding:0.8rem;text-align:left">Usuario</th>
+              <th style="padding:0.8rem;text-align:center">Rol</th>
+              <th style="padding:0.8rem;text-align:center">Estado</th>
+              <th style="padding:0.8rem;text-align:center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
       </div>
     </div>
 
@@ -655,6 +699,7 @@ let ventas   = JSON.parse(localStorage.getItem('ma4_v')||'[]');
 let almacen  = JSON.parse(localStorage.getItem('ma4_a')||'[]');
 let clientes = JSON.parse(localStorage.getItem('ma4_c')||'[]');
 let usuarios = JSON.parse(localStorage.getItem('ma4_u')||'[]');
+let sesionActual = null;
 let eVId=null,eAId=null,eCId=null;
 let vSC='fecha',vSD=-1,vPg=1;
 let almView='cards';
@@ -1197,6 +1242,28 @@ function viewFactura(id){const v=ventas.find(x=>x.id===id);if(!v)return;const ht
 function printFactura(id){viewFactura(id);setTimeout(()=>{window.print()},500)}
 if(document.getElementById('f-g')){document.getElementById('pgTitle').textContent='Facturas';renderF()}
 
+// Restaurar sesión si existe
+const savedSession = localStorage.getItem('sesionActual');
+if(savedSession){
+  try {
+    sesionActual = JSON.parse(savedSession);
+    const userStillExists = usuarios.find(u => u.id === sesionActual.id && u.activo);
+    if(!userStillExists){
+      sesionActual = null;
+      localStorage.removeItem('sesionActual');
+    }
+  } catch(e) {
+    sesionActual = null;
+    localStorage.removeItem('sesionActual');
+  }
+}
+
+// Si no hay sesión, mostrar login
+if(!sesionActual){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.getElementById('page-login').classList.add('on');
+}
+
 badges(); rDash();
 showAdminPanel();
 
@@ -1206,6 +1273,17 @@ function showAdminPanel(){
     if(typeof sesionActual !== 'undefined' && sesionActual && sesionActual.rol==='admin'){
       const btn = document.getElementById('usersBtn');
       if(btn) btn.style.display='block';
+
+      const adminNav = document.getElementById('nav-admin');
+      if(adminNav) adminNav.style.display='block';
+
+      const usersNav = document.getElementById('ni-users');
+      if(usersNav) {
+        usersNav.onclick = () => {
+          goPage('usuarios');
+          renderUsuarios();
+        };
+      }
     }
   } catch(e) {
     // Silent fail - variables not ready yet
@@ -1260,6 +1338,105 @@ function saveNewUser(){
 
   closeOv('ov-users');
   toast('✅ Usuario creado: ' + usuario);
+}
+
+// ═════════════════════════════════════
+// LOGIN & SESSION FUNCTIONS
+// ═════════════════════════════════════
+
+function doLogin(){
+  const usuario = document.getElementById('login-usuario').value.trim();
+  const pin = document.getElementById('login-pin').value.trim();
+  const errorEl = document.getElementById('login-error');
+
+  if(!usuario || !pin){
+    errorEl.textContent = '⚠ Completa usuario y PIN';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  if(pin.length !== 4 || isNaN(pin)){
+    errorEl.textContent = '⚠ PIN debe ser 4 dígitos';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const user = usuarios.find(u => u.usuario === usuario && u.pin === pin && u.activo);
+
+  if(!user){
+    errorEl.textContent = '❌ Usuario o PIN incorrecto';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  sesionActual = user;
+  localStorage.setItem('sesionActual', JSON.stringify(user));
+
+  goPage('dashboard');
+  showAdminPanel();
+
+  document.getElementById('login-usuario').value = '';
+  document.getElementById('login-pin').value = '';
+  errorEl.style.display = 'none';
+}
+
+function doLogout(){
+  sesionActual = null;
+  localStorage.removeItem('sesionActual');
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.getElementById('page-login').classList.add('on');
+
+  toast('👋 Sesión cerrada');
+}
+
+// ═════════════════════════════════════
+// USUARIOS (ADMIN) FUNCTIONS
+// ═════════════════════════════════════
+
+function renderUsuarios(){
+  const tbody = document.getElementById('users-tbody');
+  if(!tbody) return;
+
+  tbody.innerHTML = usuarios.map(u => `
+    <tr style="border-bottom:1px solid var(--brd)">
+      <td style="padding:0.8rem">${u.nombre}</td>
+      <td style="padding:0.8rem">${u.usuario}</td>
+      <td style="padding:0.8rem;text-align:center">
+        <span style="display:inline-block;padding:0.3rem 0.6rem;border-radius:4px;font-size:0.75rem;font-weight:600;${u.rol==='admin'?'background:var(--purpb);color:var(--purp)':'background:var(--grnb);color:var(--grn)'}">${u.rol}</span>
+      </td>
+      <td style="padding:0.8rem;text-align:center">
+        <span style="font-size:0.75rem">${u.activo ? '✅ Activo' : '❌ Inactivo'}</span>
+      </td>
+      <td style="padding:0.8rem;text-align:center">
+        <button class="btn btn-ghost btn-xs" onclick="editarUsuario(${u.id})">✏️ Rol</button>
+        <button class="btn btn-ghost btn-xs" onclick="toggleUsuario(${u.id})" style="color:var(--amb)">${u.activo ? '🚫 Des' : '✅ Act'}</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function editarUsuario(userId){
+  const user = usuarios.find(u => u.id === userId);
+  if(!user) return;
+
+  const newRol = user.rol === 'admin' ? 'user' : 'admin';
+  user.rol = newRol;
+  sv();
+  syncUsersToSupabase();
+  renderUsuarios();
+  toast(`✅ ${user.nombre} es ahora ${newRol}`);
+}
+
+function toggleUsuario(userId){
+  const user = usuarios.find(u => u.id === userId);
+  if(!user) return;
+
+  user.activo = !user.activo;
+  sv();
+  syncUsersToSupabase();
+  renderUsuarios();
+  toast(`${user.activo ? '✅ Usuario activado' : '🚫 Usuario desactivado'}`);
 }
 
 // ═════════════════════════════════════
