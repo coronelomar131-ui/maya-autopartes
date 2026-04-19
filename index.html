@@ -367,6 +367,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="tb-right">
       <div class="clk" id="clkEl">—</div>
       <button class="btn btn-primary btn-sm" id="mainBtn" onclick="openVentaModal()">+ Nueva Venta</button>
+      <span id="sessionInfo" style="font-size:0.85rem;color:var(--muted);margin-right:1rem;display:none">👤 <span id="sessionName"></span></span>
       <button class="btn btn-ghost btn-sm" id="usersBtn" onclick="goPage('usuarios');renderUsuarios()" style="display:none">👤 Usuarios</button>
       <button class="btn btn-ghost btn-sm" id="logoutBtn" onclick="doLogout()">🚪 Salir</button>
     </div>
@@ -386,7 +387,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
           <div class="modal-hd" style="text-align:center">🔐 Acceso al Sistema</div>
           <div class="field" style="margin-bottom:1.2rem">
             <label>Usuario</label>
-            <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" autofocus style="font-size:1rem;padding:0.6rem">
+            <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" autofocus style="font-size:1rem;padding:0.6rem" onkeypress="if(event.key==='Enter') document.getElementById('login-pin').focus()">
           </div>
           <div class="field" style="margin-bottom:1.2rem">
             <label>PIN (4 dígitos)</label>
@@ -1277,6 +1278,14 @@ if(savedSession && usuarios.length > 0){
 if(!sesionActual || usuarios.length === 0){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.getElementById('page-login').classList.add('on');
+} else {
+  // Mostrar info de sesión si existe
+  const sessionInfo = document.getElementById('sessionInfo');
+  const sessionName = document.getElementById('sessionName');
+  if(sessionInfo && sessionName && sesionActual){
+    sessionName.textContent = sesionActual.nombre.split(' ')[0];
+    sessionInfo.style.display = 'inline';
+  }
 }
 
 badges(); rDash();
@@ -1353,6 +1362,11 @@ function saveNewUser(){
 
   closeOv('ov-users');
   toast('✅ Usuario creado: ' + usuario);
+
+  // Si está en la página de usuarios, actualizar tabla
+  if(document.getElementById('page-usuarios').classList.contains('on')){
+    renderUsuarios();
+  }
 }
 
 // ═════════════════════════════════════
@@ -1386,6 +1400,14 @@ function doLogin(){
 
   sesionActual = user;
   localStorage.setItem('sesionActual', JSON.stringify(user));
+
+  // Mostrar info de sesión
+  const sessionInfo = document.getElementById('sessionInfo');
+  const sessionName = document.getElementById('sessionName');
+  if(sessionInfo && sessionName){
+    sessionName.textContent = user.nombre.split(' ')[0];
+    sessionInfo.style.display = 'inline';
+  }
 
   goPage('dashboard');
   showAdminPanel();
