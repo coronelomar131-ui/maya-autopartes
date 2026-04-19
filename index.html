@@ -376,19 +376,28 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 
     <!-- ══ LOGIN ══ -->
     <div class="page on" id="page-login">
-      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)">
-        <div class="modal" style="max-width:400px;margin:0">
-          <div class="modal-hd">👤 Acceso al Sistema</div>
-          <div class="field" style="margin-bottom:1rem">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--navy),var(--navy2));padding:1rem">
+        <div style="text-align:center;margin-bottom:2rem;color:#fff">
+          <div style="font-size:3rem;margin-bottom:0.5rem">🏪</div>
+          <div style="font-size:2rem;font-weight:800;font-family:var(--fh);letter-spacing:2px">MAYA</div>
+          <div style="font-size:0.9rem;opacity:0.8;font-family:var(--fm)">AUTOPARTES</div>
+        </div>
+        <div class="modal" style="max-width:420px;width:100%">
+          <div class="modal-hd" style="text-align:center">🔐 Acceso al Sistema</div>
+          <div class="field" style="margin-bottom:1.2rem">
             <label>Usuario</label>
-            <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" autofocus>
+            <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" autofocus style="font-size:1rem;padding:0.6rem">
           </div>
-          <div class="field" style="margin-bottom:1rem">
+          <div class="field" style="margin-bottom:1.2rem">
             <label>PIN (4 dígitos)</label>
-            <input type="password" id="login-pin" placeholder="0000" maxlength="4" onkeypress="if(event.key==='Enter') doLogin()">
+            <input type="password" id="login-pin" placeholder="••••" maxlength="4" onkeypress="if(event.key==='Enter') doLogin()" style="font-size:1.5rem;letter-spacing:0.5rem;text-align:center;padding:0.6rem;font-weight:600">
           </div>
-          <div id="login-error" style="color:var(--red);font-size:0.85rem;margin-bottom:0.8rem;display:none"></div>
-          <button class="btn btn-primary" style="width:100%" onclick="doLogin()">🔓 Ingresar</button>
+          <div id="login-error" style="color:var(--red);font-size:0.85rem;margin-bottom:1rem;padding:0.6rem;background:rgba(220,53,69,0.1);border-radius:4px;border-left:3px solid var(--red);display:none"></div>
+          <button class="btn btn-primary" style="width:100%;padding:0.7rem;font-size:1rem;font-weight:600;letter-spacing:0.5px" onclick="doLogin()">🔓 INGRESAR</button>
+          <div style="text-align:center;margin-top:1.5rem;color:var(--muted);font-size:0.85rem;font-family:var(--fm)">
+            <p>Sistema de Gestión Maya Autopartes</p>
+            <p>© 2026 - Todos los derechos reservados</p>
+          </div>
         </div>
       </div>
     </div>
@@ -544,19 +553,25 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
           <button class="btn btn-primary btn-sm" onclick="openUsersModal()">➕ Nuevo Usuario</button>
         </div>
       </div>
-      <div style="padding:1rem">
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
-            <tr style="background:var(--s2);border-bottom:2px solid var(--brd)">
-              <th style="padding:0.8rem;text-align:left">Nombre</th>
-              <th style="padding:0.8rem;text-align:left">Usuario</th>
-              <th style="padding:0.8rem;text-align:center">Rol</th>
-              <th style="padding:0.8rem;text-align:center">Estado</th>
-              <th style="padding:0.8rem;text-align:center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="users-tbody"></tbody>
-        </table>
+      <div style="padding:1.2rem">
+        <div id="users-empty" style="text-align:center;padding:2rem;color:var(--muted2);display:none">
+          <div style="font-size:2rem;margin-bottom:0.5rem">👥</div>
+          <p>Sin usuarios registrados</p>
+        </div>
+        <div id="users-container" style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;background:var(--w);border:1px solid var(--brd);border-radius:var(--r2);overflow:hidden">
+            <thead>
+              <tr style="background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff">
+                <th style="padding:1rem;text-align:left;font-weight:600">Nombre</th>
+                <th style="padding:1rem;text-align:left;font-weight:600">Usuario</th>
+                <th style="padding:1rem;text-align:center;font-weight:600">Rol</th>
+                <th style="padding:1rem;text-align:center;font-weight:600">Estado</th>
+                <th style="padding:1rem;text-align:center;font-weight:600">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1401,21 +1416,34 @@ function doLogout(){
 
 function renderUsuarios(){
   const tbody = document.getElementById('users-tbody');
+  const empty = document.getElementById('users-empty');
+  const container = document.getElementById('users-container');
   if(!tbody) return;
 
-  tbody.innerHTML = usuarios.map(u => `
-    <tr style="border-bottom:1px solid var(--brd)">
-      <td style="padding:0.8rem">${u.nombre}</td>
-      <td style="padding:0.8rem">${u.usuario}</td>
-      <td style="padding:0.8rem;text-align:center">
-        <span style="display:inline-block;padding:0.3rem 0.6rem;border-radius:4px;font-size:0.75rem;font-weight:600;${u.rol==='admin'?'background:var(--purpb);color:var(--purp)':'background:var(--grnb);color:var(--grn)'}">${u.rol}</span>
+  if(usuarios.length === 0){
+    container.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  container.style.display = 'block';
+
+  tbody.innerHTML = usuarios.map((u, idx) => `
+    <tr style="border-bottom:1px solid var(--brd);background:${idx % 2 === 0 ? 'var(--w)' : 'var(--s3)'}">
+      <td style="padding:1rem;font-weight:500">${u.nombre}</td>
+      <td style="padding:1rem;font-family:var(--fm);font-size:0.9rem;color:var(--muted)">${u.usuario}</td>
+      <td style="padding:1rem;text-align:center">
+        <span style="display:inline-block;padding:0.35rem 0.7rem;border-radius:5px;font-size:0.75rem;font-weight:600;${u.rol==='admin'?'background:var(--purpb);color:var(--purp)':'background:var(--grnb);color:var(--grn)'}">
+          ${u.rol==='admin'?'👑 Admin':'👤 Usuario'}
+        </span>
       </td>
-      <td style="padding:0.8rem;text-align:center">
-        <span style="font-size:0.75rem">${u.activo ? '✅ Activo' : '❌ Inactivo'}</span>
+      <td style="padding:1rem;text-align:center">
+        <span style="font-size:0.8rem;font-weight:500;${u.activo?'color:var(--grn)':'color:var(--red)'}">${u.activo ? '🟢 Activo' : '🔴 Inactivo'}</span>
       </td>
-      <td style="padding:0.8rem;text-align:center">
-        <button class="btn btn-ghost btn-xs" onclick="editarUsuario(${u.id})">✏️ Rol</button>
-        <button class="btn btn-ghost btn-xs" onclick="toggleUsuario(${u.id})" style="color:var(--amb)">${u.activo ? '🚫 Des' : '✅ Act'}</button>
+      <td style="padding:1rem;text-align:center">
+        <button class="btn btn-ghost btn-xs" onclick="editarUsuario(${u.id})" title="Cambiar rol">👑</button>
+        <button class="btn btn-ghost btn-xs" onclick="toggleUsuario(${u.id})" title="Activar/Desactivar" style="color:var(--amb)">${u.activo ? '🔒' : '🔓'}</button>
       </td>
     </tr>
   `).join('');
