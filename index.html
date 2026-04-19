@@ -1200,19 +1200,20 @@ showAdminPanel();
 
 // USUARIOS - Mostrar botón solo para admin
 function showAdminPanel(){
-  if(sesionActual && sesionActual.rol==='admin'){
-    const btn = document.getElementById('usersBtn');
-    if(btn) btn.style.display='block';
+  try {
+    if(typeof sesionActual !== 'undefined' && sesionActual && sesionActual.rol==='admin'){
+      const btn = document.getElementById('usersBtn');
+      if(btn) btn.style.display='block';
+    }
+  } catch(e) {
+    // Silent fail - variables not ready yet
   }
 }
 
 function openUsersModal(){
-  alert('¡Botón funciona!');
   const modal = document.getElementById('ov-users');
   if(modal){
     modal.classList.add('on');
-  } else {
-    alert('Modal no encontrado - id: ov-users');
   }
 }
 
@@ -1229,6 +1230,11 @@ function saveNewUser(){
 
   if(pin.length !== 4 || isNaN(pin)){
     toast('⚠ PIN debe ser 4 dígitos');
+    return;
+  }
+
+  if(typeof usuarios === 'undefined'){
+    toast('⚠ Error: datos no cargados');
     return;
   }
 
