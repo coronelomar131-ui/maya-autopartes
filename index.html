@@ -1322,7 +1322,11 @@ function deleteUser(id){
 // Supabase Configuration
 const SUPABASE_URL = 'https://cqyxyyqcioqygeikmuxa.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_H8PKOeQ4YMRtR4ZUb3CQDg_48hNW8dD';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+if (!window.supabase) {
+  console.error('Supabase library not loaded');
+} else {
+  window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+}
 
 let supabaseReady = false;
 let subscriptions = [];
@@ -1373,7 +1377,7 @@ async function initSupabase() {
     // Try to fetch from tables to verify they exist
     // If they don't, data will come from localStorage
     try {
-      const { data: ventasData } = await supabase.from('ventas').select('*').limit(1);
+      const { data: ventasData } = await window.supabaseClient.from('ventas').select('*').limit(1);
       if (ventasData !== null) {
         console.log('✅ Supabase tables exist');
         supabaseReady = true;
@@ -1397,19 +1401,19 @@ async function initSupabase() {
 // Load data from Supabase
 async function loadFromSupabase() {
   try {
-    const { data: v } = await supabase.from('ventas').select('data').limit(1);
+    const { data: v } = await window.supabaseClient.from('ventas').select('data').limit(1);
     if (v && v.length > 0 && v[0].data) ventas = v[0].data;
 
-    const { data: a } = await supabase.from('almacen').select('data').limit(1);
+    const { data: a } = await window.supabaseClient.from('almacen').select('data').limit(1);
     if (a && a.length > 0 && a[0].data) almacen = a[0].data;
 
-    const { data: c } = await supabase.from('clientes').select('data').limit(1);
+    const { data: c } = await window.supabaseClient.from('clientes').select('data').limit(1);
     if (c && c.length > 0 && c[0].data) clientes = c[0].data;
 
-    const { data: e } = await supabase.from('entregas').select('data').limit(1);
+    const { data: e } = await window.supabaseClient.from('entregas').select('data').limit(1);
     if (e && e.length > 0 && e[0].data) entregas = e[0].data;
 
-    const { data: u } = await supabase.from('usuarios').select('data').limit(1);
+    const { data: u } = await window.supabaseClient.from('usuarios').select('data').limit(1);
     if (u && u.length > 0 && u[0].data) usuarios = u[0].data;
 
     console.log('✅ Data loaded from Supabase');
@@ -1504,11 +1508,11 @@ sv = async function() {
   if (supabaseReady) {
     try {
       // Upsert data (insert or update)
-      await supabase.from('ventas').upsert({ id: 1, data: ventas }, { onConflict: 'id' });
-      await supabase.from('almacen').upsert({ id: 1, data: almacen }, { onConflict: 'id' });
-      await supabase.from('clientes').upsert({ id: 1, data: clientes }, { onConflict: 'id' });
-      await supabase.from('entregas').upsert({ id: 1, data: entregas }, { onConflict: 'id' });
-      await supabase.from('usuarios').upsert({ id: 1, data: usuarios }, { onConflict: 'id' });
+      await window.supabaseClient.from('ventas').upsert({ id: 1, data: ventas }, { onConflict: 'id' });
+      await window.supabaseClient.from('almacen').upsert({ id: 1, data: almacen }, { onConflict: 'id' });
+      await window.supabaseClient.from('clientes').upsert({ id: 1, data: clientes }, { onConflict: 'id' });
+      await window.supabaseClient.from('entregas').upsert({ id: 1, data: entregas }, { onConflict: 'id' });
+      await window.supabaseClient.from('usuarios').upsert({ id: 1, data: usuarios }, { onConflict: 'id' });
       console.log('✅ Saved to Supabase');
     } catch (error) {
       console.error('Supabase save error:', error);
