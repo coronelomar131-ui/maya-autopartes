@@ -338,6 +338,8 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="ni" onclick="goPage('clientes',this)"><span class="ni-ico">◉</span>Clientes<span class="ni-badge" id="nb-c">0</span></div>
     <div class="nav-sec">Documentos</div>
     <div class="ni" onclick="goPage('facturas',this)"><span class="ni-ico">📄</span>Facturas</div>
+    <div class="nav-sec" id="nav-admin" style="display:none">Admin</div>
+    <div class="ni" id="ni-usuarios" onclick="goPage('usuarios',this)" style="display:none"><span class="ni-ico">👤</span>Usuarios</div>
     <div class="nav-sec">Exportación</div>
     <div class="ni" onclick="goPage('compac',this)"><span class="ni-ico">⇄</span>Compac / Export</div>
   </nav>
@@ -475,6 +477,19 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       </div>
       <div class="f-grid" id="f-g"></div>
       <div class="empty" id="f-empty" style="display:none"><div class="ei">📄</div><div class="et">Sin Facturas</div><div class="es">Las facturas se generan de ventas con "Con Factura".</div></div>
+    </div>
+
+    <!-- ══ USUARIOS ══ -->
+    <div class="page" id="page-usuarios">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.55rem">
+        <h2 style="margin:0">Gestión de Usuarios</h2>
+        <button class="btn btn-primary btn-sm" onclick="openUserModal()">+ Nuevo Usuario</button>
+      </div>
+      <div class="tcard">
+        <div class="twrap"><table><thead><tr>
+          <th>Nombre</th><th>Usuario</th><th>Rol</th><th>Estado</th><th></th>
+        </tr></thead><tbody id="users-tb"></tbody></table></div>
+      </div>
     </div>
 
     <!-- ══ COMPAC ══ -->
@@ -617,6 +632,32 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
   </div>
 </div>
 
+<!-- USUARIOS MODAL -->
+<div class="overlay" id="ov-u" onclick="clsOv('ov-u',event)">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hd">
+      <h3 id="uu-title">Nuevo Usuario</h3>
+      <button class="btn btn-ghost" onclick="closeOv('ov-u')">✕</button>
+    </div>
+    <div class="modal-bd">
+      <input type="hidden" id="uu-id">
+      <div class="field"><label>Nombre Completo</label><input type="text" id="uu-nom" placeholder="Juan Pérez"></div>
+      <div class="field"><label>Usuario (login)</label><input type="text" id="uu-usr" placeholder="juan.perez"></div>
+      <div class="field"><label>PIN (4 dígitos)</label><input type="text" id="uu-pin" placeholder="1234" maxlength="4"></div>
+      <div class="field"><label>Rol</label>
+        <select id="uu-rol">
+          <option value="user">Usuario Normal</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-u')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveUser()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -640,8 +681,8 @@ function sv(){
 // ═════════════════════════════════════
 // SIDEBAR NAV  — closes on mobile after selecting
 // ═════════════════════════════════════
-const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',compac:'Exportar / Compac'};
-const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',compac:'Maya Autopartes / Exportar'};
+const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',usuarios:'Usuarios',compac:'Exportar / Compac'};
+const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',usuarios:'Maya Autopartes / Usuarios',compac:'Maya Autopartes / Exportar'};
 
 function goPage(name, el){
   // 1. swap pages
@@ -661,6 +702,7 @@ function goPage(name, el){
     almacen:  ()=>{btn.textContent='+ Producto';   btn.onclick=openAlmModal},
     clientes: ()=>{btn.textContent='+ Cliente';    btn.onclick=openClienteModal},
     facturas: ()=>{btn.textContent='⚙ Configurar'; btn.onclick=openCfgModal},
+    usuarios: ()=>{btn.textContent='+ Nuevo Usuario'; btn.onclick=openUserModal},
     compac:   ()=>{btn.textContent='⬇ Exportar';  btn.onclick=exportCompac},
   };
   if(acts[name]) acts[name]();
@@ -669,6 +711,7 @@ function goPage(name, el){
   if(name==='ventas')    renderV();
   if(name==='almacen')   renderA();
   if(name==='clientes')  renderC();
+  if(name==='usuarios')  renderUsers();
   if(name==='facturas')  renderF();
   if(name==='compac')    rCompac();
   badges();
@@ -698,6 +741,9 @@ function badges(){
   document.getElementById('ss-c').textContent=clientes.length;
   document.getElementById('ss-p').textContent=pen;
   document.getElementById('ss-a').textContent=alrt;
+
+  // Show usuarios section only for admins
+  showUsersSection();
 }
 
 // ═════════════════════════════════════
@@ -1168,6 +1214,105 @@ function printFactura(id){viewFactura(id);setTimeout(()=>{window.print()},500)}
 if(document.getElementById('f-g')){document.getElementById('pgTitle').textContent='Facturas';renderF()}
 
 badges(); rDash();
+
+// ═════════════════════════════════════
+// USUARIOS MANAGEMENT
+// ═════════════════════════════════════
+function showUsersSection(){
+  const ni = document.getElementById('ni-usuarios');
+  const nav = document.getElementById('nav-admin');
+  if(sesionActual && sesionActual.rol === 'admin'){
+    if(ni) ni.style.display = 'flex';
+    if(nav) nav.style.display = 'block';
+  }
+}
+
+function renderUsers(){
+  const tb = document.getElementById('users-tb');
+  if(!tb) return;
+  tb.innerHTML = usuarios.map(u => `
+    <tr>
+      <td>${u.nombre}</td>
+      <td>${u.usuario}</td>
+      <td>${u.rol}</td>
+      <td><span style="color:${u.activo?'var(--grn)':'var(--red)'}">${u.activo?'Activo':'Inactivo'}</span></td>
+      <td style="text-align:right">
+        <button class="btn btn-ghost btn-xs" onclick="editUser(${u.id})">Editar</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteUser(${u.id})">Eliminar</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openUserModal(){
+  document.getElementById('uu-nom').value = '';
+  document.getElementById('uu-usr').value = '';
+  document.getElementById('uu-pin').value = '';
+  document.getElementById('uu-rol').value = 'user';
+  document.getElementById('uu-id').value = '';
+  document.getElementById('ov-u').classList.add('on');
+}
+
+function editUser(id){
+  const u = usuarios.find(x => x.id === id);
+  if(!u) return;
+  document.getElementById('uu-nom').value = u.nombre;
+  document.getElementById('uu-usr').value = u.usuario;
+  document.getElementById('uu-pin').value = u.pin;
+  document.getElementById('uu-rol').value = u.rol;
+  document.getElementById('uu-id').value = id;
+  document.getElementById('ov-u').classList.add('on');
+}
+
+function saveUser(){
+  const id = document.getElementById('uu-id').value || null;
+  const nombre = document.getElementById('uu-nom').value.trim();
+  const usuario = document.getElementById('uu-usr').value.trim();
+  const pin = document.getElementById('uu-pin').value.trim();
+  const rol = document.getElementById('uu-rol').value;
+
+  if(!nombre || !usuario || !pin){
+    toast('⚠ Completa todos los campos');
+    return;
+  }
+
+  if(id){
+    // Editar existente
+    const u = usuarios.find(x => x.id === parseInt(id));
+    if(u){
+      u.nombre = nombre;
+      u.usuario = usuario;
+      u.pin = pin;
+      u.rol = rol;
+      u.activo = true;
+    }
+  } else {
+    // Crear nuevo
+    const newId = Math.max(...usuarios.map(u => u.id), 0) + 1;
+    usuarios.push({
+      id: newId,
+      nombre,
+      usuario,
+      pin,
+      rol,
+      activo: true
+    });
+  }
+
+  sv();
+  renderUsers();
+  closeOv('ov-u');
+  toast('✅ Usuario guardado');
+}
+
+function deleteUser(id){
+  if(!confirm('¿Eliminar este usuario?')) return;
+  usuarios = usuarios.filter(u => u.id !== id);
+  sv();
+  renderUsers();
+  toast('✅ Usuario eliminado');
+}
+
 </script>
 
 <!-- Supabase for Real-time Sync -->
