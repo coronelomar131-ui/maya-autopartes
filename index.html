@@ -1264,6 +1264,9 @@ async function loadFromSupabase() {
     const { data: e } = await supabase.from('entregas').select('data').limit(1);
     if (e && e.length > 0 && e[0].data) entregas = e[0].data;
 
+    const { data: u } = await supabase.from('usuarios').select('data').limit(1);
+    if (u && u.length > 0 && u[0].data) usuarios = u[0].data;
+
     console.log('✅ Data loaded from Supabase');
   } catch (error) {
     console.error('Error loading from Supabase:', error);
@@ -1312,6 +1315,30 @@ function setupRealtimeListeners() {
       .subscribe();
     subscriptions.push(clientesSub);
 
+    // Listen to entregas changes
+    const entregasSub = supabase
+      .channel('entregas-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'entregas' }, payload => {
+        if (payload.new && payload.new.data) {
+          entregas = payload.new.data;
+          console.log('✅ Entregas synced');
+        }
+      })
+      .subscribe();
+    subscriptions.push(entregasSub);
+
+    // Listen to usuarios changes
+    const usuariosSub = supabase
+      .channel('usuarios-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, payload => {
+        if (payload.new && payload.new.data) {
+          usuarios = payload.new.data;
+          console.log('✅ Usuarios synced');
+        }
+      })
+      .subscribe();
+    subscriptions.push(usuariosSub);
+
     console.log('✅ Real-time listeners setup');
   } catch (error) {
     console.error('Error setting up listeners:', error);
@@ -1326,6 +1353,7 @@ sv = async function() {
   localStorage.setItem('ma4_a', JSON.stringify(almacen));
   localStorage.setItem('ma4_c', JSON.stringify(clientes));
   localStorage.setItem('ma4_ent', JSON.stringify(entregas));
+  localStorage.setItem('ma4_u', JSON.stringify(usuarios));
 
   // Save to Supabase if ready
   if (supabaseReady) {
@@ -1335,6 +1363,7 @@ sv = async function() {
       await supabase.from('almacen').upsert({ id: 1, data: almacen }, { onConflict: 'id' });
       await supabase.from('clientes').upsert({ id: 1, data: clientes }, { onConflict: 'id' });
       await supabase.from('entregas').upsert({ id: 1, data: entregas }, { onConflict: 'id' });
+      await supabase.from('usuarios').upsert({ id: 1, data: usuarios }, { onConflict: 'id' });
       console.log('✅ Saved to Supabase');
     } catch (error) {
       console.error('Supabase save error:', error);
