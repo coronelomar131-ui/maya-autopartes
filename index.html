@@ -735,6 +735,12 @@ const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',cliente
 const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',compac:'Maya Autopartes / Exportar'};
 
 function goPage(name, el){
+  // Protección: si no hay sesión, no permitir cambiar de página (excepto login)
+  if(!sesionActual && name !== 'login'){
+    toast('⚠ Debes ingresar primero');
+    return;
+  }
+
   // 1. swap pages
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.getElementById('page-'+name).classList.add('on');
