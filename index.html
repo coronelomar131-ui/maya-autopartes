@@ -1169,5 +1169,183 @@ if(document.getElementById('f-g')){document.getElementById('pgTitle').textConten
 
 badges(); rDash();
 </script>
+
+<!-- Supabase for Real-time Sync -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// Supabase Configuration
+const SUPABASE_URL = 'https://cqyxyyqcioqygeikmuxa.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_H8PKOeQ4YMRtR4ZUb3CQDg_48hNW8dD';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let supabaseReady = false;
+let subscriptions = [];
+
+// Initialize Supabase tables and set up real-time sync
+async function initSupabase() {
+  try {
+    // Create tables if they don't exist
+    const tablesToCreate = [
+      {
+        name: 'ventas',
+        create: `CREATE TABLE IF NOT EXISTS ventas (
+          id BIGINT PRIMARY KEY DEFAULT gen_random_bigint(),
+          data JSONB NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )`
+      },
+      {
+        name: 'almacen',
+        create: `CREATE TABLE IF NOT EXISTS almacen (
+          id BIGINT PRIMARY KEY DEFAULT gen_random_bigint(),
+          data JSONB NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )`
+      },
+      {
+        name: 'clientes',
+        create: `CREATE TABLE IF NOT EXISTS clientes (
+          id BIGINT PRIMARY KEY DEFAULT gen_random_bigint(),
+          data JSONB NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )`
+      },
+      {
+        name: 'entregas',
+        create: `CREATE TABLE IF NOT EXISTS entregas (
+          id BIGINT PRIMARY KEY DEFAULT gen_random_bigint(),
+          data JSONB NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )`
+      }
+    ];
+
+    // Try to fetch from tables to verify they exist
+    // If they don't, data will come from localStorage
+    try {
+      const { data: ventasData } = await supabase.from('ventas').select('*').limit(1);
+      if (ventasData !== null) {
+        console.log('✅ Supabase tables exist');
+        supabaseReady = true;
+
+        // Load data from Supabase
+        await loadFromSupabase();
+
+        // Set up real-time listeners
+        setupRealtimeListeners();
+      }
+    } catch (e) {
+      console.log('Tables need to be created via Supabase console');
+      supabaseReady = false;
+    }
+  } catch (error) {
+    console.error('Supabase init error:', error);
+    supabaseReady = false;
+  }
+}
+
+// Load data from Supabase
+async function loadFromSupabase() {
+  try {
+    const { data: v } = await supabase.from('ventas').select('data').limit(1);
+    if (v && v.length > 0 && v[0].data) ventas = v[0].data;
+
+    const { data: a } = await supabase.from('almacen').select('data').limit(1);
+    if (a && a.length > 0 && a[0].data) almacen = a[0].data;
+
+    const { data: c } = await supabase.from('clientes').select('data').limit(1);
+    if (c && c.length > 0 && c[0].data) clientes = c[0].data;
+
+    const { data: e } = await supabase.from('entregas').select('data').limit(1);
+    if (e && e.length > 0 && e[0].data) entregas = e[0].data;
+
+    console.log('✅ Data loaded from Supabase');
+  } catch (error) {
+    console.error('Error loading from Supabase:', error);
+  }
+}
+
+// Set up real-time listeners
+function setupRealtimeListeners() {
+  try {
+    // Listen to ventas changes
+    const ventasSub = supabase
+      .channel('ventas-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ventas' }, payload => {
+        if (payload.new && payload.new.data) {
+          ventas = payload.new.data;
+          renderV();
+          console.log('✅ Ventas synced');
+        }
+      })
+      .subscribe();
+    subscriptions.push(ventasSub);
+
+    // Listen to almacen changes
+    const almacenSub = supabase
+      .channel('almacen-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'almacen' }, payload => {
+        if (payload.new && payload.new.data) {
+          almacen = payload.new.data;
+          renderA();
+          console.log('✅ Almacen synced');
+        }
+      })
+      .subscribe();
+    subscriptions.push(almacenSub);
+
+    // Listen to clientes changes
+    const clientesSub = supabase
+      .channel('clientes-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, payload => {
+        if (payload.new && payload.new.data) {
+          clientes = payload.new.data;
+          renderC();
+          console.log('✅ Clientes synced');
+        }
+      })
+      .subscribe();
+    subscriptions.push(clientesSub);
+
+    console.log('✅ Real-time listeners setup');
+  } catch (error) {
+    console.error('Error setting up listeners:', error);
+  }
+}
+
+// Override save function to use Supabase
+const originalSv = sv;
+sv = async function() {
+  // Save to localStorage always (backup)
+  localStorage.setItem('ma4_v', JSON.stringify(ventas));
+  localStorage.setItem('ma4_a', JSON.stringify(almacen));
+  localStorage.setItem('ma4_c', JSON.stringify(clientes));
+  localStorage.setItem('ma4_ent', JSON.stringify(entregas));
+
+  // Save to Supabase if ready
+  if (supabaseReady) {
+    try {
+      // Upsert data (insert or update)
+      await supabase.from('ventas').upsert({ id: 1, data: ventas }, { onConflict: 'id' });
+      await supabase.from('almacen').upsert({ id: 1, data: almacen }, { onConflict: 'id' });
+      await supabase.from('clientes').upsert({ id: 1, data: clientes }, { onConflict: 'id' });
+      await supabase.from('entregas').upsert({ id: 1, data: entregas }, { onConflict: 'id' });
+      console.log('✅ Saved to Supabase');
+    } catch (error) {
+      console.error('Supabase save error:', error);
+      // Silently fail - data is in localStorage
+    }
+  }
+};
+
+// Initialize Supabase when page loads
+initSupabase();
+</script>
+
 </body>
 </html>
