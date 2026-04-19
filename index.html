@@ -73,6 +73,7 @@ nav{flex:1;overflow-y:auto;padding:.4rem 0}
 .sb-dot{display:flex;align-items:center;justify-content:center;gap:.4rem;color:var(--teal);font-size:.6rem;margin-top:.28rem}
 .dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes pulse{0%{opacity:1}50%{opacity:.6}100%{opacity:1}}
 
 /* ─── MAIN ─── */
 .main{margin-left:224px;min-height:100vh;display:flex;flex-direction:column}
@@ -282,19 +283,6 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 .cl-tags{display:flex;gap:.28rem;flex-wrap:wrap}
 .cl-foot{display:flex;justify-content:flex-end;gap:.28rem;margin-top:.6rem}
 
-/* ─── FACTURAS ─── */
-.f-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:.85rem}
-.f-card{background:var(--w);border:1px solid var(--brd);border-radius:var(--r2);padding:1.2rem;box-shadow:var(--sh);transition:all .18s}
-.f-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:var(--sh2)}
-.fc-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:2px solid var(--brd)}
-.fc-num{font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--navy)}
-.fc-info{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
-.fci{display:flex;flex-direction:column;gap:.25rem}
-.fcl{font-family:var(--fm);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-.fcv{font-family:var(--fh);font-size:.9rem;font-weight:700;color:var(--navy)}
-.fc-amt{font-size:1.5rem;font-weight:800;color:var(--teal);margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px solid var(--brd)}
-.fc-acts{display:flex;gap:.6rem}
-
 /* ─── COMPAC STEPS ─── */
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:.85rem;margin-bottom:1.25rem}
 .step{background:var(--w);border:1px solid var(--brd);border-radius:var(--r2);padding:.95rem;box-shadow:var(--sh)}
@@ -317,9 +305,121 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
   .menu-btn{display:flex}.alm-summary{grid-template-columns:1fr 1fr}
 }
 @media(max-width:480px){.kpi-grid{grid-template-columns:1fr}.alm-summary{grid-template-columns:1fr 1fr}}
+
+/* ─── LOGIN SCREEN ─── */
+#loginScreen{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy) 0%,#0d1f35 100%);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column}
+#loginScreen.hidden{display:none}
+.login-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:2.5rem 2rem;width:320px;max-width:90vw;text-align:center;backdrop-filter:blur(10px)}
+.login-logo{width:140px;margin:0 auto 1.4rem;display:block;background:#fff;border-radius:8px;padding:.5rem}
+.login-title{font-family:var(--fh);font-size:1.5rem;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:2px;margin-bottom:.3rem}
+.login-sub{font-family:var(--fm);font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:1px;margin-bottom:1.6rem}
+.pin-dots{display:flex;justify-content:center;gap:.6rem;margin-bottom:1.2rem}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:transparent;transition:all .2s}
+.pin-dot.filled{background:var(--teal);border-color:var(--teal)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem}
+.pin-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:var(--fh);font-size:1.4rem;font-weight:700;padding:.85rem;cursor:pointer;transition:all .14s;user-select:none}
+.pin-btn:hover{background:rgba(59,188,212,.25);border-color:var(--teal)}
+.pin-btn.pin-del{font-size:1rem;color:rgba(255,255,255,.5)}
+.pin-btn.pin-0{grid-column:2}
+.login-err{font-family:var(--fm);font-size:.65rem;color:var(--red);min-height:1rem;margin-bottom:.5rem;animation:shake .3s}
+.login-user-sel{margin-bottom:1rem}
+.login-user-sel select{width:100%;padding:.55rem .8rem;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;font-family:var(--fb);font-size:.85rem;outline:none;cursor:pointer}
+.login-user-sel select option{background:#1a2d42;color:#fff}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ─── TOPBAR USER ─── */
+.tb-user{display:flex;align-items:center;gap:.45rem;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:.28rem .65rem;cursor:pointer}
+.tb-user-av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--navy));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:.7rem;font-weight:800;color:#fff}
+.tb-user-name{font-family:var(--fm);font-size:.62rem;color:var(--navy);font-weight:600}
+.tb-user-role{font-family:var(--fm);font-size:.52rem;color:var(--muted2)}
+
+/* ─── ENTREGAS MODULE ─── */
+.ent-tablet{max-width:780px;margin:0 auto}
+.ent-form-card{background:var(--w);border:1px solid var(--brd);border-radius:var(--r2);padding:1.6rem;box-shadow:var(--sh2);margin-bottom:1.4rem}
+.ent-title{font-family:var(--fh);font-size:1.6rem;font-weight:900;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:1.2rem;padding-bottom:.7rem;border-bottom:3px solid var(--teal)}
+.pay-btns{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin:.5rem 0}
+.pay-btn{background:var(--s2);border:2.5px solid var(--brd);border-radius:var(--r2);padding:1.1rem .8rem;cursor:pointer;text-align:center;transition:all .18s;font-family:var(--fb)}
+.pay-btn:hover{border-color:var(--teal)}
+.pay-btn.on{border-color:var(--teal);background:rgba(59,188,212,.1)}
+.pay-btn-ico{font-size:2rem;display:block;margin-bottom:.35rem}
+.pay-btn-lbl{font-size:.82rem;font-weight:700;color:var(--navy)}
+.fac-toggle{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin:.5rem 0}
+.fac-btn{background:var(--s2);border:2.5px solid var(--brd);border-radius:var(--r2);padding:.8rem;cursor:pointer;text-align:center;transition:all .18s}
+.fac-btn.on.yes{border-color:var(--grn);background:var(--grnb)}
+.fac-btn.on.no{border-color:var(--amb);background:var(--ambb)}
+.fac-btn:hover{border-color:var(--teal)}
+.fac-lbl{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--navy)}
+.ent-reg-btn{width:100%;padding:1.1rem;font-size:1rem;border-radius:var(--r2);margin-top:1rem;letter-spacing:.5px}
+.ent-hist{background:var(--w);border:1px solid var(--brd);border-radius:var(--r2);overflow:hidden;box-shadow:var(--sh)}
+.ent-hist-hd{background:var(--navy);color:#fff;font-family:var(--fh);font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:.7rem 1rem;border-bottom:2px solid var(--teal)}
+.ent-row{display:grid;grid-template-columns:80px 1fr 1fr auto auto auto;gap:.5rem;align-items:center;padding:.65rem 1rem;border-bottom:1px solid var(--brd);font-size:.76rem}
+.ent-row:last-child{border-bottom:none}
+.ent-row:hover{background:rgba(59,188,212,.04)}
+.ent-time{font-family:var(--fm);font-size:.6rem;color:var(--muted)}
+
+/* ─── USUARIOS MODULE ─── */
+.usr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.85rem}
+.usr-card{background:var(--w);border:1px solid var(--brd);border-radius:var(--r2);padding:1.1rem;box-shadow:var(--sh);transition:all .18s}
+.usr-card:hover{border-color:var(--teal);box-shadow:var(--sh2)}
+.usr-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:.65rem}
+.usr-name{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--navy)}
+.usr-user{font-family:var(--fm);font-size:.6rem;color:var(--muted)}
+.usr-role{margin-top:.4rem}
+.role-admin{background:rgba(124,58,237,.1);color:var(--purp);border:1px solid rgba(124,58,237,.2)}
+.role-vendedor{background:rgba(59,188,212,.1);color:var(--teal2);border:1px solid rgba(59,188,212,.2)}
+.role-receptor{background:var(--grnb);color:var(--grn);border:1px solid rgba(25,135,84,.2)}
+
+/* ─── PRINT STYLES (nota de entrega) ─── */
+@media print{
+  body *{visibility:hidden}
+  #printNote,#printNote *{visibility:visible}
+  #printNote{position:fixed;inset:0;background:#fff;padding:20mm 15mm;font-family:'Arial',sans-serif}
+  .pn-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1E4F7A;padding-bottom:8px;margin-bottom:16px}
+  .pn-logo-txt{font-size:22px;font-weight:900;color:#1E4F7A;letter-spacing:2px}
+  .pn-folio{font-size:11px;color:#666;text-align:right}
+  .pn-section{margin-bottom:12px}
+  .pn-label{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+  .pn-value{font-size:13px;font-weight:700;color:#0d2035}
+  .pn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .pn-pay{background:#f0f7ff;border:2px solid #1E4F7A;border-radius:6px;padding:8px 12px;text-align:center;font-size:14px;font-weight:900;color:#1E4F7A}
+  .pn-sign{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:40px}
+  .pn-sign-line{border-top:1px solid #333;padding-top:6px;font-size:9px;color:#666;text-align:center}
+  .pn-footer{margin-top:24px;text-align:center;font-size:8px;color:#aaa;border-top:1px solid #eee;padding-top:8px}
+}
 </style>
 </head>
 <body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <img class="login-logo" id="loginLogoImg" src="" alt="Maya Autopartes">
+    <div class="login-title">Maya ERP</div>
+    <div class="login-sub">AUTOPARTES · ACCESO SEGURO</div>
+    <div class="login-user-sel"><select id="loginUserSel" onchange="loginSelectUser()"><option value="">— Seleccionar usuario —</option></select></div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinPress(1)">1</button>
+      <button class="pin-btn" onclick="pinPress(2)">2</button>
+      <button class="pin-btn" onclick="pinPress(3)">3</button>
+      <button class="pin-btn" onclick="pinPress(4)">4</button>
+      <button class="pin-btn" onclick="pinPress(5)">5</button>
+      <button class="pin-btn" onclick="pinPress(6)">6</button>
+      <button class="pin-btn" onclick="pinPress(7)">7</button>
+      <button class="pin-btn" onclick="pinPress(8)">8</button>
+      <button class="pin-btn" onclick="pinPress(9)">9</button>
+      <button class="pin-btn pin-0" onclick="pinPress(0)">0</button>
+      <button class="pin-btn pin-del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- PRINT NOTE (oculta, solo para imprimir) -->
+<div id="printNote" style="display:none"></div>
 
 <!-- Mobile overlay -->
 <div id="sideOverlay" onclick="closeSidebar()"></div>
@@ -336,10 +436,12 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="ni" onclick="goPage('ventas',this)"><span class="ni-ico">◎</span>Ventas<span class="ni-badge" id="nb-v">0</span></div>
     <div class="ni" onclick="goPage('almacen',this)"><span class="ni-ico">▦</span>Almacén<span class="ni-badge" id="nb-a">0</span></div>
     <div class="ni" onclick="goPage('clientes',this)"><span class="ni-ico">◉</span>Clientes<span class="ni-badge" id="nb-c">0</span></div>
-    <div class="nav-sec">Documentos</div>
-    <div class="ni" onclick="goPage('facturas',this)"><span class="ni-ico">📄</span>Facturas</div>
+    <div class="nav-sec">Operación</div>
+    <div class="ni" onclick="goPage('entregas',this)"><span class="ni-ico">📋</span>Entregas<span class="ni-badge" id="nb-e">0</span></div>
     <div class="nav-sec">Exportación</div>
     <div class="ni" onclick="goPage('compac',this)"><span class="ni-ico">⇄</span>Compac / Export</div>
+    <div class="nav-sec">Sistema</div>
+    <div class="ni" id="ni-usr" onclick="goPage('usuarios',this)"><span class="ni-ico">👤</span>Usuarios</div>
   </nav>
   <div class="sb-stats">
     <div class="ss-grid">
@@ -364,6 +466,14 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     </div>
     <div class="tb-right">
       <div class="clk" id="clkEl">—</div>
+      <div id="connectionStatus" title="Estado de conexión Firestore" style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.8rem;background:#f5f7fb;border-radius:6px;font-size:0.7rem;color:#666;">
+        <span id="statusDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3BBCD4;animation:pulse 2s infinite;"></span>
+        <span id="statusText">Conectado</span>
+      </div>
+      <div class="tb-user" id="tbUser" onclick="cerrarSesion()" title="Cerrar sesión">
+        <div class="tb-user-av" id="tbUserAv">?</div>
+        <div><div class="tb-user-name" id="tbUserName">—</div><div class="tb-user-role" id="tbUserRole">—</div></div>
+      </div>
       <button class="btn btn-primary btn-sm" id="mainBtn" onclick="openVentaModal()">+ Nueva Venta</button>
     </div>
   </div>
@@ -465,18 +575,6 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       </div>
     </div>
 
-    <!-- ══ FACTURAS ══ -->
-    <div class="page" id="page-facturas">
-      <div class="frow">
-        <div class="sbox"><input type="text" id="f-s" placeholder="Buscar cliente…" oninput="renderF()"></div>
-        <select class="filt" id="f-estado" onchange="renderF()"><option value="">Estado</option><option value="pagada">Pagada</option><option value="pendiente">Pendiente</option></select>
-        <input type="date" id="f-desde" onchange="renderF()" style="padding:.36rem .6rem;border:1px solid var(--brd);border-radius:var(--r);background:var(--w);font-family:var(--fm);font-size:.75rem">
-        <button class="btn btn-teal btn-sm" onclick="openCfgModal()">⚙ Config</button>
-      </div>
-      <div class="f-grid" id="f-g"></div>
-      <div class="empty" id="f-empty" style="display:none"><div class="ei">📄</div><div class="et">Sin Facturas</div><div class="es">Las facturas se generan de ventas con "Con Factura".</div></div>
-    </div>
-
     <!-- ══ COMPAC ══ -->
     <div class="page" id="page-compac">
       <div class="steps">
@@ -513,6 +611,83 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       </div>
     </div>
 
+    <!-- ══ ENTREGAS ══ -->
+    <div class="page" id="page-entregas">
+      <div class="ent-tablet">
+        <div class="ent-form-card">
+          <div class="ent-title">Registro de Entregas Locales</div>
+          <div class="fgrid">
+            <div class="field"><label>Fecha *</label><input type="date" id="ent-fecha"></div>
+            <div class="field"><label>No. Folio</label><input type="text" id="ent-folio" placeholder="ENT-0001"></div>
+            <div class="field ff"><label>Cliente / Destinatario *</label><input type="text" id="ent-cli" placeholder="Nombre o empresa"></div>
+            <div class="field ff"><label>Descripción / Artículos</label><input type="text" id="ent-desc" placeholder="Descripción de lo que se entrega"></div>
+            <div class="field">
+              <label>Forma de Pago</label>
+              <div class="pay-btns">
+                <div class="pay-btn on" id="pay-eft" onclick="selPay('efectivo')"><span class="pay-btn-ico">💵</span><div class="pay-btn-lbl">Efectivo</div></div>
+                <div class="pay-btn" id="pay-trf" onclick="selPay('transferencia')"><span class="pay-btn-ico">🏦</span><div class="pay-btn-lbl">Transferencia</div></div>
+              </div>
+            </div>
+            <div class="field">
+              <label>¿Requiere Factura?</label>
+              <div class="fac-toggle">
+                <div class="fac-btn" id="fac-si" onclick="selFac(true)"><span class="fac-lbl">✓ Sí</span></div>
+                <div class="fac-btn on no" id="fac-no" onclick="selFac(false)"><span class="fac-lbl">✕ No</span></div>
+              </div>
+            </div>
+            <div class="field"><label>Monto ($)</label><input type="number" id="ent-monto" step="0.01" placeholder="0.00"></div>
+            <div class="field"><label>Recibe</label><input type="text" id="ent-recibe" placeholder="Nombre quien recibe"></div>
+          </div>
+          <button class="btn btn-primary ent-reg-btn" onclick="regEntrega()">✅ Registrar Entrega</button>
+        </div>
+        <div class="ent-hist">
+          <div class="ent-hist-hd">Historial de Entregas</div>
+          <div id="ent-list"><div style="text-align:center;padding:1.5rem;color:var(--muted2);font-family:var(--fm);font-size:.7rem">Sin entregas registradas hoy.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ USUARIOS ══ -->
+    <div class="page" id="page-usuarios">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.6rem">
+        <div>
+          <div style="font-family:var(--fh);font-size:1.3rem;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.5px">Gestión de Usuarios</div>
+          <div style="font-family:var(--fm);font-size:.62rem;color:var(--muted2);margin-top:.15rem">Administra el acceso al sistema, roles y PINs.</div>
+        </div>
+        <button class="btn btn-primary" onclick="openUsuarioModal()" id="btnNuevoUsr">+ Nuevo Usuario</button>
+      </div>
+      <div class="usr-grid" id="usr-grid"></div>
+      <div class="empty" id="usr-empty" style="display:none">
+        <div class="ei">👤</div>
+        <div class="et">Sin Usuarios</div>
+        <div class="es">Crea el primer usuario para controlar el acceso al sistema con PIN seguro y roles diferenciados.</div>
+        <button class="btn btn-primary btn-sm" onclick="openUsuarioModal()">+ Crear Primer Usuario</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── MODAL USUARIO ── -->
+<div class="overlay" id="ov-u" onclick="clsOv('ov-u',event)">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-hd" id="um-t">Nuevo Usuario</div>
+    <div class="fgrid">
+      <div class="field ff"><label>Nombre Completo *</label><input type="text" id="uu-nom" placeholder="Nombre del empleado"></div>
+      <div class="field"><label>Usuario (login) *</label><input type="text" id="uu-usr" placeholder="juan.perez" autocomplete="off"></div>
+      <div class="field"><label>PIN (4 dígitos) *</label><input type="password" id="uu-pin" placeholder="••••" maxlength="4" inputmode="numeric"></div>
+      <div class="field"><label>Rol</label>
+        <select id="uu-rol">
+          <option value="admin">👑 Admin (acceso total)</option>
+          <option value="vendedor">🟦 Vendedor (ventas + almacén)</option>
+          <option value="receptor">🟩 Receptor (solo entregas)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-u')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveUsuario()">💾 Guardar</button>
+    </div>
   </div>
 </div>
 
@@ -599,24 +774,6 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
   </div>
 </div>
 
-<!-- ── MODAL CONFIG ── -->
-<div class="overlay" id="ov-cfg" onclick="clsOv('ov-cfg',event)">
-  <div class="modal">
-    <div class="modal-hd">Configuración de Empresa</div>
-    <div class="modal-bd">
-      <div class="field ff"><label>Nombre *</label><input type="text" id="cfg-nom" placeholder="Maya Autopartes"></div>
-      <div class="field"><label>RFC</label><input type="text" id="cfg-rfc" placeholder="RFC000000000"></div>
-      <div class="field"><label>Teléfono</label><input type="tel" id="cfg-tel" placeholder="(000) 000-0000"></div>
-      <div class="field"><label>Email</label><input type="email" id="cfg-email"></div>
-      <div class="field ff"><label>Dirección</label><textarea id="cfg-dir" rows="2" placeholder="Dirección completa"></textarea></div>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeOv('ov-cfg')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveCfg()">💾 Guardar</button>
-    </div>
-  </div>
-</div>
-
 <div id="toast"></div>
 
 <script>
@@ -626,22 +783,42 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 let ventas   = JSON.parse(localStorage.getItem('ma4_v')||'[]');
 let almacen  = JSON.parse(localStorage.getItem('ma4_a')||'[]');
 let clientes = JSON.parse(localStorage.getItem('ma4_c')||'[]');
-let eVId=null,eAId=null,eCId=null;
+let usuarios = JSON.parse(localStorage.getItem('ma4_u')||'null');
+let entregas = JSON.parse(localStorage.getItem('ma4_ent')||'[]');
+
+// Default admin user if none exist or if empty array was saved
+if(!usuarios || !usuarios.length){
+  usuarios=[{id:1,nombre:'Administrador',usuario:'admin',pin:'1234',rol:'admin',activo:true}];
+  localStorage.setItem('ma4_u',JSON.stringify(usuarios));
+}
+
+let eVId=null,eAId=null,eCId=null,eUId=null;
 let vSC='fecha',vSD=-1,vPg=1;
 let almView='cards';
+let entPago='efectivo',entFac=false;
+let sesionActual=null;
 const PG=15;
 
 function sv(){
   localStorage.setItem('ma4_v',JSON.stringify(ventas));
   localStorage.setItem('ma4_a',JSON.stringify(almacen));
   localStorage.setItem('ma4_c',JSON.stringify(clientes));
+  localStorage.setItem('ma4_u',JSON.stringify(usuarios));
+  localStorage.setItem('ma4_ent',JSON.stringify(entregas));
 }
+
+// ── Set login logo to same as sidebar ──
+(function(){
+  const sideImg = document.querySelector('.sb-logo img');
+  const loginImg = document.getElementById('loginLogoImg');
+  if(sideImg && loginImg) loginImg.src = sideImg.src;
+})();
 
 // ═════════════════════════════════════
 // SIDEBAR NAV  — closes on mobile after selecting
 // ═════════════════════════════════════
-const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',compac:'Exportar / Compac'};
-const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',compac:'Maya Autopartes / Exportar'};
+const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',compac:'Exportar / Compac',entregas:'Entregas Locales',usuarios:'Usuarios'};
+const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',compac:'Maya Autopartes / Exportar',entregas:'Maya Autopartes / Entregas',usuarios:'Maya Autopartes / Usuarios'};
 
 function goPage(name, el){
   // 1. swap pages
@@ -656,21 +833,23 @@ function goPage(name, el){
   // 4. main action button
   const btn = document.getElementById('mainBtn');
   const acts = {
-    dashboard:()=>{btn.textContent='+ Nueva Venta';btn.onclick=openVentaModal},
-    ventas:   ()=>{btn.textContent='+ Nueva Venta';btn.onclick=openVentaModal},
-    almacen:  ()=>{btn.textContent='+ Producto';   btn.onclick=openAlmModal},
-    clientes: ()=>{btn.textContent='+ Cliente';    btn.onclick=openClienteModal},
-    facturas: ()=>{btn.textContent='⚙ Configurar'; btn.onclick=openCfgModal},
-    compac:   ()=>{btn.textContent='⬇ Exportar';  btn.onclick=exportCompac},
+    dashboard:()=>{btn.style.display='';btn.textContent='+ Nueva Venta';btn.onclick=openVentaModal},
+    ventas:   ()=>{btn.style.display='';btn.textContent='+ Nueva Venta';btn.onclick=openVentaModal},
+    almacen:  ()=>{btn.style.display='';btn.textContent='+ Producto';   btn.onclick=openAlmModal},
+    clientes: ()=>{btn.style.display='';btn.textContent='+ Cliente';    btn.onclick=openClienteModal},
+    compac:   ()=>{btn.style.display='';btn.textContent='⬇ Exportar';  btn.onclick=exportCompac},
+    entregas: ()=>{btn.style.display='none'},
+    usuarios: ()=>{btn.style.display='none'},
   };
-  if(acts[name]) acts[name]();
+  if(acts[name]) acts[name](); else btn.style.display='';
   // 5. render
   if(name==='dashboard') rDash();
   if(name==='ventas')    renderV();
   if(name==='almacen')   renderA();
   if(name==='clientes')  renderC();
-  if(name==='facturas')  renderF();
   if(name==='compac')    rCompac();
+  if(name==='usuarios')  renderUsuarios();
+  if(name==='entregas')  renderEntregas();
   badges();
   // 6. CLOSE SIDEBAR ON MOBILE
   closeSidebar();
@@ -694,10 +873,17 @@ function badges(){
   document.getElementById('nb-v').textContent=ventas.length;
   document.getElementById('nb-a').textContent=almacen.length;
   document.getElementById('nb-c').textContent=clientes.length;
+  const nbE=document.getElementById('nb-e');if(nbE)nbE.textContent=entregas.length;
   document.getElementById('ss-v').textContent=ventas.length;
   document.getElementById('ss-c').textContent=clientes.length;
   document.getElementById('ss-p').textContent=pen;
   document.getElementById('ss-a').textContent=alrt;
+  // update topbar user
+  if(sesionActual){
+    document.getElementById('tbUserAv').textContent=(sesionActual.nombre||'?')[0].toUpperCase();
+    document.getElementById('tbUserName').textContent=sesionActual.nombre||'Usuario';
+    document.getElementById('tbUserRole').textContent=sesionActual.rol||'—';
+  }
 }
 
 // ═════════════════════════════════════
@@ -1157,17 +1343,437 @@ setInterval(()=>{
 // show menu button on mobile
 if(window.innerWidth<900)document.getElementById('menuBtn').style.display='flex';
 window.addEventListener('resize',()=>{document.getElementById('menuBtn').style.display=window.innerWidth<900?'flex':'none'});
-// INIT
-// ═ FACTURAS ═
-let cfg=JSON.parse(localStorage.getItem('ma4_cfg')||'{"nombre":"Maya Autopartes","rfc":"","tel":"","email":"","dir":""}');
-function saveCfg(){const g=id=>(document.getElementById(id)?.value||'').trim();cfg={nombre:g('cfg-nom'),rfc:g('cfg-rfc'),tel:g('cfg-tel'),email:g('cfg-email'),dir:g('cfg-dir')};localStorage.setItem('ma4_cfg',JSON.stringify(cfg));toast('✅ Guardado');closeOv('ov-cfg')}
-function openCfgModal(){const f=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};f('cfg-nom',cfg.nombre);f('cfg-rfc',cfg.rfc);f('cfg-tel',cfg.tel);f('cfg-email',cfg.email);f('cfg-dir',cfg.dir);document.getElementById('ov-cfg').classList.add('on')}
-function renderF(){const q=(document.getElementById('f-s')?.value||'').toLowerCase();const est=document.getElementById('f-estado')?.value||'';const data=ventas.filter(v=>{if(v.factura!=='con')return false;if(q&&!`${v.cliente}`.toLowerCase().includes(q))return false;if(est&&v.cobro!==est)return false;return true}).sort((a,b)=>new Date(b.fechaFactura||b.fecha)-new Date(a.fechaFactura||a.fecha));document.getElementById('f-empty').style.display=!ventas.some(v=>v.factura==='con')?'flex':'none';document.getElementById('f-g').innerHTML=data.length===0&&ventas.some(v=>v.factura==='con')?`<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted2)">Sin resultados</div>`:data.map(v=>{const est=v.cobro==='cobrado'?'pagada':'pendiente';const col=est==='pagada'?'var(--grn)':'var(--red)';return`<div class="f-card"><div class="fc-hd"><div class="fc-num">#${String(v.id).slice(-6)}</div><span class="badge" style="color:${col};background:${est==='pagada'?'rgba(25,135,84,.1)':'rgba(220,53,69,.1)'};border:1px solid ${est==='pagada'?'rgba(25,135,84,.2)':'rgba(220,53,69,.2)'};">${est}</span></div><div class="fc-info"><div class="fci"><span class="fcl">Cliente</span><span class="fcv">${v.cliente}</span></div><div class="fci"><span class="fcl">Fecha</span><span class="fcv">${v.fecha}</span></div></div><div class="fc-amt">${fmt(v.total)}</div><div class="fc-acts"><button class="btn btn-ghost btn-xs" onclick="viewFactura(${v.id})">Ver</button><button class="btn btn-primary btn-xs" onclick="printFactura(${v.id})">Imprimir</button></div></div>`}).join('')}
-function viewFactura(id){const v=ventas.find(x=>x.id===id);if(!v)return;const html=`<html><head><style>body{font-family:Arial;padding:20px;background:#f5f5f5}.fac{background:white;padding:40px;margin:0 auto;max-width:900px;box-shadow:0 0 20px rgba(0,0,0,0.1)}h1{color:#1E4F7A;margin:0}p{color:#666;font-size:12px;margin:2px 0}.hd{display:flex;justify-content:space-between;border-bottom:3px solid #1E4F7A;padding-bottom:20px;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin:20px 0}th{background:#1E4F7A;color:white;padding:10px;text-align:left}td{padding:8px;border-bottom:1px solid #ddd}.tot{text-align:right;font-size:18px;font-weight:bold;color:#1E4F7A;margin-top:20px}@media print{body{background:white}.fac{box-shadow:none;padding:0}}</style></head><body><div class="fac"><div class="hd"><div><h1>${cfg.nombre}</h1><p>RFC: ${cfg.rfc}</p><p>${cfg.tel} | ${cfg.email}</p><p>${cfg.dir}</p></div><div style="text-align:right"><h2>FACTURA</h2><p>#${String(v.id).slice(-6)}</p><p>Fecha: ${v.fecha}</p></div></div><div><h3>Cliente</h3><p><strong>${v.cliente}</strong></p></div><table><tr><th>Concepto</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr><tr><td>Venta</td><td>${v.cantidad}</td><td>${fmt(v.total/v.cantidad)}</td><td>${fmt(v.total)}</td></tr></table><div class="tot">TOTAL: ${fmt(v.total)}</div><p style="margin-top:30px;color:#999;font-size:11px">Estado: ${v.cobro==='cobrado'?'PAGADA':'PENDIENTE'}</p></div></body></html>`;const w=window.open('','','width=900,height=1000');w.document.write(html);w.document.close()}
-function printFactura(id){viewFactura(id);setTimeout(()=>{window.print()},500)}
-if(document.getElementById('f-g')){document.getElementById('pgTitle').textContent='Facturas';renderF()}
+// ═════════════════════════════════════
+// USUARIOS
+// ═════════════════════════════════════
+function renderUsuarios(){
+  document.getElementById('usr-empty').style.display = !usuarios.length?'flex':'none';
+  document.getElementById('usr-grid').innerHTML = usuarios.map(u=>`
+    <div class="usr-card ${u.activo?'':'inact'}">
+      <div class="usr-av" style="background:${u.rol==='admin'?'#ffe6e6':u.rol==='vendedor'?'#e6f0ff':'#e6ffe6'};color:${u.rol==='admin'?'var(--red)':u.rol==='vendedor'?'var(--navy)':'var(--grn)'}">${(u.nombre||'?')[0].toUpperCase()}</div>
+      <div class="usr-info">
+        <div class="usr-name" style="font-weight:700;color:var(--navy);font-size:.9rem;margin-bottom:2px">${u.nombre} ${u.activo?'':'<span style="color:var(--red);font-size:.65rem;font-weight:600">(Inactivo)</span>'}</div>
+        <div class="usr-role" style="font-size:.7rem;color:var(--muted)">${u.rol.toUpperCase()} · Usuario: ${u.usuario}</div>
+      </div>
+      <div class="usr-acts" style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-xs" onclick="editUsuario(${u.id})">✏ Editar</button>
+        <button class="btn btn-danger btn-xs" onclick="delUsuario(${u.id})" ${u.id===1?'disabled':''}>✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+function openUsuarioModal(data){
+  eUId=data?data.id:null;
+  document.getElementById('um-t').textContent=data?'Editar Usuario':'Nuevo Usuario';
+  const f=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};
+  f('uu-nom',data?.nombre||'');f('uu-usr',data?.usuario||'');f('uu-pin',data?.pin||'');
+  f('uu-rol',data?.rol||'vendedor');
+  const act = document.getElementById('uu-act');
+  if(act) act.checked = data ? !!data.activo : true;
+  document.getElementById('ov-u').classList.add('on');
+}
+function editUsuario(id){const u=usuarios.find(x=>x.id===id);if(u)openUsuarioModal(u);}
+function delUsuario(id){
+  if(id===1){toast('⚠ No puedes eliminar al administrador principal');return;}
+  if(!confirm('¿Eliminar usuario?'))return;
+  usuarios=usuarios.filter(u=>u.id!==id);
+  sv();toast('🗑 Usuario eliminado');renderUsuarios();
+}
+function saveUsuario(){
+  const g=id=>(document.getElementById(id)?.value||'').trim();
+  if(!g('uu-nom')||!g('uu-usr')||!g('uu-pin')){toast('⚠ Completa nombre, usuario y PIN');return;}
+  const act = document.getElementById('uu-act') ? document.getElementById('uu-act').checked : true;
+  const u = {id:eUId||Date.now(),nombre:g('uu-nom'),usuario:g('uu-usr'),pin:g('uu-pin'),rol:g('uu-rol'),activo:act};
+  if(eUId){usuarios=usuarios.map(x=>x.id===eUId?u:x);toast('✅ Usuario actualizado');}
+  else{
+    if(usuarios.find(x=>x.usuario.toLowerCase()===u.usuario.toLowerCase())){toast('⚠ El nombre de usuario ya existe');return;}
+    usuarios.push(u);toast('✅ Usuario creado');
+  }
+  sv();closeOv('ov-u');renderUsuarios();
+}
 
-badges(); rDash();
+// ═════════════════════════════════════
+// ENTREGAS LOCALES
+// ═════════════════════════════════════
+function renderEntregas(){
+  document.getElementById('ent-fecha').value = today();
+  const hist = entregas.filter(e=>e.fecha===today());
+  document.getElementById('ent-list').innerHTML = !hist.length 
+    ? `<div style="text-align:center;padding:1.5rem;color:var(--muted2);font-family:var(--fm);font-size:.7rem">Sin entregas registradas hoy.</div>`
+    : hist.map(e=>`
+      <div style="background:#fff;border:1px solid #eee;border-radius:6px;padding:12px;margin-bottom:8px;font-family:var(--fm)">
+        <div style="display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:4px">
+          <span>${e.folio||'S/F'}</span><span style="color:var(--grn)">${fmt(e.monto)}</span>
+        </div>
+        <div style="font-size:.7rem;color:#444;margin-bottom:2px">Dest: <span style="font-weight:600">${e.cliente}</span></div>
+        <div style="font-size:.65rem;color:var(--muted)">Recibió: ${e.recibe||'—'} · Pago: <span style="text-transform:capitalize">${e.pago}</span></div>
+        <div style="margin-top:8px;text-align:right"><button class="btn btn-ghost btn-xs" onclick="printEntrega(${e.id})">🖨 Imprimir Recibo</button></div>
+      </div>
+    `).join('');
+}
+function selPay(p){
+  entPago=p;
+  document.getElementById('pay-eft').classList.toggle('on',p==='efectivo');
+  document.getElementById('pay-trf').classList.toggle('on',p==='transferencia');
+}
+function selFac(f){
+  entFac=f;
+  document.getElementById('fac-si').classList.toggle('on',f);
+  document.getElementById('fac-no').classList.toggle('on',!f);
+}
+function regEntrega(){
+  const g=id=>(document.getElementById(id)?.value||'').trim();
+  if(!g('ent-fecha')||!g('ent-cli')){toast('⚠ Fecha y Cliente son obligatorios');return;}
+  const ent = {id:Date.now(),fecha:g('ent-fecha'),folio:g('ent-folio'),cliente:g('ent-cli'),desc:g('ent-desc'),
+    pago:entPago,factura:entFac?'SI':'NO',monto:parseFloat(g('ent-monto'))||0,recibe:g('ent-recibe')};
+  entregas.unshift(ent);
+  sv();toast('✅ Entrega registrada');
+  document.getElementById('ent-folio').value='';document.getElementById('ent-cli').value='';
+  document.getElementById('ent-desc').value='';document.getElementById('ent-monto').value='';
+  document.getElementById('ent-recibe').value='';
+  renderEntregas();badges();
+}
+function printEntrega(id){
+  const e = entregas.find(x=>x.id===id);
+  if(!e)return;
+  const p = document.getElementById('printNote');
+  p.innerHTML = `
+    <div class="pn-wrap" style="display:block">
+      <div class="pn-head">
+        <h2 style="margin:0;font-size:18px;color:#0d2035">MAYA AUTOPARTES</h2>
+        <div style="font-size:10px;color:#666;margin-top:4px">RECIBO DE ENTREGA LOCAL</div>
+      </div>
+      <div class="pn-grid" style="margin-top:15px">
+        <div><div class="pn-label">Fecha</div><div class="pn-value">${e.fecha}</div></div>
+        <div style="text-align:right"><div class="pn-label">Folio</div><div class="pn-value">${e.folio||'S/F'}</div></div>
+      </div>
+      <div style="margin-bottom:12px"><div class="pn-label">Cliente / Destinatario</div><div class="pn-value">${e.cliente}</div></div>
+      <div style="margin-bottom:12px"><div class="pn-label">Descripción</div><div class="pn-value" style="font-weight:400">${e.desc||'—'}</div></div>
+      <div class="pn-grid">
+        <div><div class="pn-label">Forma de Pago</div><div class="pn-value" style="text-transform:capitalize">${e.pago}</div></div>
+        <div style="text-align:right"><div class="pn-label">Factura</div><div class="pn-value">${e.factura}</div></div>
+      </div>
+      <div class="pn-pay">Monto: ${fmt(e.monto)}</div>
+      <div class="pn-sign">
+        <div class="pn-sign-line">Entregado por (Maya)</div>
+        <div class="pn-sign-line">Recibido por (${e.recibe||'Firma de conformidad'})</div>
+      </div>
+      <div class="pn-footer">Este documento es un comprobante interno de entrega.</div>
+    </div>
+  `;
+  const m = document.querySelector('.main') || document.body;
+  const o = [];
+  Array.from(document.body.children).forEach(c=>{ if(c.id!=='printNote' && c.tagName!=='SCRIPT'){ o.push(c); c.style.display='none'; } });
+  p.style.display='block';
+  window.print();
+  p.style.display='none';
+  o.forEach(c=>{ c.style.display=''; });
+}
+
+// ═════════════════════════════════════
+// LOGIN & SESSION
+// ═════════════════════════════════════
+let pinBuffer='';
+function initLogin(){
+  const sel=document.getElementById('loginUserSel');
+  sel.innerHTML='<option value="">— Seleccionar usuario —</option>'+usuarios.filter(u=>u.activo).map(u=>`<option value="${u.usuario}">${u.nombre} (${u.rol})</option>`).join('');
+  document.getElementById('loginScreen').style.display='flex';
+  const m = document.querySelector('.main-layout'); if(m) m.style.display='none';
+  document.getElementById('sb').style.display='none';
+}
+function loginSelectUser(){
+  pinBuffer=''; updatePinDots();
+  document.getElementById('loginErr').textContent='';
+}
+function pinPress(n){
+  const u=document.getElementById('loginUserSel').value;
+  if(!u){document.getElementById('loginErr').textContent='Selecciona un usuario primero';return;}
+  if(pinBuffer.length<4) pinBuffer+=n;
+  updatePinDots();
+  if(pinBuffer.length===4) setTimeout(checkLogin, 150);
+}
+function pinDel(){
+  if(pinBuffer.length>0) pinBuffer=pinBuffer.slice(0,-1);
+  updatePinDots();
+  document.getElementById('loginErr').textContent='';
+}
+function updatePinDots(){
+  for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('on', i<pinBuffer.length);
+}
+function checkLogin(){
+  const usr=document.getElementById('loginUserSel').value;
+  const userObj = usuarios.find(u=>u.usuario===usr && u.pin===pinBuffer && u.activo);
+  if(userObj){
+    sesionActual = userObj;
+    // Set Firebase user context for Firestore sync
+    currentUser = userObj.usuario + '@maya-autopartes.local';
+    document.getElementById('loginScreen').style.display='none';
+    const m = document.querySelector('.main-layout'); if(m) m.style.display=''; // or flex depending on css
+    document.getElementById('sb').style.display='';
+    // Apply access controls
+    const r = userObj.rol;
+    const ni_users = document.querySelector('.ni[onclick="goPage(\'usuarios\', this)"]');
+    if(ni_users) ni_users.style.display = r==='admin' ? 'flex' : 'none';
+    // Setup Firestore real-time listeners
+    setupRealtimeListeners();
+    badges(); rDash(); goPage('dashboard');
+    toast('✅ Bienvenido, '+userObj.nombre);
+  } else {
+    document.getElementById('loginErr').textContent='PIN Incorrecto. Intenta de nuevo.';
+    pinBuffer=''; updatePinDots();
+  }
+}
+function logout(){
+  if(!confirm('¿Cerrar sesión?'))return;
+  sesionActual = null;
+  currentUser = null;
+  // Detach all Firestore listeners
+  firestoreListeners.forEach(unsubscribe => unsubscribe());
+  firestoreListeners = [];
+  document.getElementById('loginUserSel').value='';
+  pinBuffer=''; updatePinDots();
+  const m = document.querySelector('.main-layout'); if(m) m.style.display='none';
+  document.getElementById('sb').style.display='none';
+  initLogin();
+}
+
+// override original topbar HTML onclick logout in case there was user badge
+const upro = document.querySelector('.tb-user');
+if(upro) upro.onclick = logout;
+if(upro) upro.title = 'Clic para cerrar sesión';
+
+// Physical keyboard support for PIN
+window.addEventListener('keydown', e => {
+  const ls = document.getElementById('loginScreen');
+  if(ls && ls.style.display !== 'none'){
+    if(e.key >= '0' && e.key <= '9') pinPress(e.key);
+    if(e.key === 'Backspace' || e.key === 'Delete') pinDel();
+  }
+});
+
+// INIT
+initLogin();
 </script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+
+<script>
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDb3pzD3e1xzVSXgD08iKnHoKp-1KbD5KM",
+  authDomain: "maya-autopartes-fd253.firebaseapp.com",
+  projectId: "maya-autopartes-fd253",
+  storageBucket: "maya-autopartes-fd253.firebasestorage.app",
+  messagingSenderId: "151927170172",
+  appId: "1:151927170172:web:05f20acf3b9a5e534195f9"
+};
+
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+let currentUser = null;
+let firestoreListeners = [];
+let isConnected = false;
+
+// Update connection status UI
+function updateConnectionStatus(connected) {
+  isConnected = connected;
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const connStatus = document.getElementById('connectionStatus');
+
+  if (!statusDot || !statusText || !connStatus) return;
+
+  if (connected) {
+    statusDot.style.background = '#3BBCD4';
+    statusText.textContent = 'Conectado';
+    statusDot.style.animation = 'pulse 2s infinite';
+  } else {
+    statusDot.style.background = '#dc3545';
+    statusText.textContent = 'Desconectado';
+    statusDot.style.animation = 'none';
+    statusDot.style.opacity = '1';
+  }
+}
+
+// Firebase Auth state listener
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user.email;
+    console.log('Firebase user logged in:', currentUser);
+    setupRealtimeListeners();
+  } else {
+    currentUser = null;
+    // Detach all listeners when user logs out
+    firestoreListeners.forEach(unsubscribe => unsubscribe());
+    firestoreListeners = [];
+    updateConnectionStatus(false);
+  }
+});
+
+// Real-time listeners setup
+function setupRealtimeListeners() {
+  // Clean up previous listeners
+  firestoreListeners.forEach(unsubscribe => unsubscribe());
+  firestoreListeners = [];
+
+  updateConnectionStatus(true);
+  let listenersReady = 0;
+  const totalListeners = 4;
+
+  // Listen to ventas collection changes
+  const ventasUnsub = db.collection('ventas').doc('_snapshot').onSnapshot(
+    (doc) => {
+      if (doc.exists && doc.data().data) {
+        ventas = doc.data().data;
+        renderV();
+        console.log('Ventas synced from Firestore');
+      }
+      listenersReady++;
+      if (listenersReady === totalListeners) updateConnectionStatus(true);
+    },
+    (error) => {
+      console.error('Ventas listener error:', error);
+      updateConnectionStatus(false);
+      showConnectionError('ventas');
+    }
+  );
+  firestoreListeners.push(ventasUnsub);
+
+  // Listen to almacen collection changes
+  const almacenUnsub = db.collection('almacen').doc('_snapshot').onSnapshot(
+    (doc) => {
+      if (doc.exists && doc.data().data) {
+        almacen = doc.data().data;
+        renderA();
+        console.log('Almacen synced from Firestore');
+      }
+      listenersReady++;
+      if (listenersReady === totalListeners) updateConnectionStatus(true);
+    },
+    (error) => {
+      console.error('Almacen listener error:', error);
+      updateConnectionStatus(false);
+      showConnectionError('almacen');
+    }
+  );
+  firestoreListeners.push(almacenUnsub);
+
+  // Listen to clientes collection changes
+  const clientesUnsub = db.collection('clientes').doc('_snapshot').onSnapshot(
+    (doc) => {
+      if (doc.exists && doc.data().data) {
+        clientes = doc.data().data;
+        renderC();
+        console.log('Clientes synced from Firestore');
+      }
+      listenersReady++;
+      if (listenersReady === totalListeners) updateConnectionStatus(true);
+    },
+    (error) => {
+      console.error('Clientes listener error:', error);
+      updateConnectionStatus(false);
+      showConnectionError('clientes');
+    }
+  );
+  firestoreListeners.push(clientesUnsub);
+
+  // Listen to entregas collection changes
+  const entregasUnsub = db.collection('entregas').doc('_snapshot').onSnapshot(
+    (doc) => {
+      if (doc.exists && doc.data().data) {
+        entregas = doc.data().data;
+        console.log('Entregas synced from Firestore');
+      }
+      listenersReady++;
+      if (listenersReady === totalListeners) updateConnectionStatus(true);
+    },
+    (error) => {
+      console.error('Entregas listener error:', error);
+      updateConnectionStatus(false);
+    }
+  );
+  firestoreListeners.push(entregasUnsub);
+}
+
+// Connection error handling
+let connectionErrorShown = false;
+function showConnectionError(collection) {
+  if (!connectionErrorShown) {
+    connectionErrorShown = true;
+    toast('🔴 Error de conexión. Reconectando...');
+    setTimeout(() => { connectionErrorShown = false; }, 5000);
+  }
+}
+
+// Updated save function to use Firestore
+async function svFirebase() {
+  if (!currentUser) {
+    // If no Firebase user, fall back to localStorage
+    localStorage.setItem('ma4_v', JSON.stringify(ventas));
+    localStorage.setItem('ma4_a', JSON.stringify(almacen));
+    localStorage.setItem('ma4_c', JSON.stringify(clientes));
+    localStorage.setItem('ma4_u', JSON.stringify(usuarios));
+    localStorage.setItem('ma4_ent', JSON.stringify(entregas));
+    return;
+  }
+
+  try {
+    // Save ventas collection
+    await db.collection('ventas').doc('_snapshot').set({
+      data: ventas,
+      lastUpdated: firebase.firestore.Timestamp.now(),
+      updatedBy: currentUser
+    });
+
+    // Save almacen collection
+    await db.collection('almacen').doc('_snapshot').set({
+      data: almacen,
+      lastUpdated: firebase.firestore.Timestamp.now(),
+      updatedBy: currentUser
+    });
+
+    // Save clientes collection
+    await db.collection('clientes').doc('_snapshot').set({
+      data: clientes,
+      lastUpdated: firebase.firestore.Timestamp.now(),
+      updatedBy: currentUser
+    });
+
+    // Save entregas collection
+    await db.collection('entregas').doc('_snapshot').set({
+      data: entregas,
+      lastUpdated: firebase.firestore.Timestamp.now(),
+      updatedBy: currentUser
+    });
+
+    // Also maintain localStorage as backup
+    localStorage.setItem('ma4_v', JSON.stringify(ventas));
+    localStorage.setItem('ma4_a', JSON.stringify(almacen));
+    localStorage.setItem('ma4_c', JSON.stringify(clientes));
+    localStorage.setItem('ma4_u', JSON.stringify(usuarios));
+    localStorage.setItem('ma4_ent', JSON.stringify(entregas));
+  } catch (error) {
+    console.error('Firestore save error:', error);
+    // Fall back to localStorage on error
+    localStorage.setItem('ma4_v', JSON.stringify(ventas));
+    localStorage.setItem('ma4_a', JSON.stringify(almacen));
+    localStorage.setItem('ma4_c', JSON.stringify(clientes));
+    localStorage.setItem('ma4_u', JSON.stringify(usuarios));
+    localStorage.setItem('ma4_ent', JSON.stringify(entregas));
+    toast('⚠️ Error sincronizando datos (guardado local)');
+  }
+}
+
+// Override the original sv() function to use Firestore version
+const originalSv = sv;
+sv = svFirebase;
+</script>
+
 </body>
 </html>
