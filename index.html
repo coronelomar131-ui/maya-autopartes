@@ -619,6 +619,31 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
   </div>
 </div>
 
+<!-- MODAL USUARIOS -->
+<div class="overlay" id="ov-users" onclick="clsOv('ov-users',event)">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hd">
+      <h3>Crear Nuevo Usuario</h3>
+      <button class="btn btn-ghost" onclick="closeOv('ov-users')">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="field"><label>Nombre Completo</label><input type="text" id="uu-nombre" placeholder="Juan Pérez"></div>
+      <div class="field"><label>Usuario (login)</label><input type="text" id="uu-usuario" placeholder="juan.perez"></div>
+      <div class="field"><label>PIN (4 dígitos)</label><input type="text" id="uu-pin" placeholder="1234" maxlength="4"></div>
+      <div class="field"><label>Rol</label>
+        <select id="uu-rol">
+          <option value="user">Usuario Normal</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-users')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveNewUser()">✅ Crear</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -1181,16 +1206,24 @@ function showAdminPanel(){
 }
 
 function openUsersModal(){
-  const nombre = prompt('Nombre del nuevo usuario:');
-  if(!nombre) return;
-  const usuario = prompt('Usuario (login):');
-  if(!usuario) return;
-  const pin = prompt('PIN (4 dígitos):');
-  if(!pin || pin.length!==4 || isNaN(pin)){
+  document.getElementById('ov-users').classList.add('on');
+}
+
+function saveNewUser(){
+  const nombre = document.getElementById('uu-nombre')?.value?.trim();
+  const usuario = document.getElementById('uu-usuario')?.value?.trim();
+  const pin = document.getElementById('uu-pin')?.value?.trim();
+  const rol = document.getElementById('uu-rol')?.value || 'user';
+
+  if(!nombre || !usuario || !pin){
+    toast('⚠ Completa todos los campos');
+    return;
+  }
+
+  if(pin.length !== 4 || isNaN(pin)){
     toast('⚠ PIN debe ser 4 dígitos');
     return;
   }
-  const rol = confirm('¿Hacer admin? (OK=Admin, Cancelar=Usuario Normal)') ? 'admin' : 'user';
 
   const newUser = {
     id: Math.max(...usuarios.map(u=>u.id), 0) + 1,
@@ -1202,8 +1235,15 @@ function openUsersModal(){
   };
 
   usuarios.push(newUser);
-  sv(); // Guarda en localStorage
-  syncUsersToSupabase(); // Sincroniza a Supabase
+  sv();
+  syncUsersToSupabase();
+
+  document.getElementById('uu-nombre').value = '';
+  document.getElementById('uu-usuario').value = '';
+  document.getElementById('uu-pin').value = '';
+  document.getElementById('uu-rol').value = 'user';
+
+  closeOv('ov-users');
   toast('✅ Usuario creado: ' + usuario);
 }
 
