@@ -783,11 +783,18 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 let ventas   = JSON.parse(localStorage.getItem('ma4_v')||'[]');
 let almacen  = JSON.parse(localStorage.getItem('ma4_a')||'[]');
 let clientes = JSON.parse(localStorage.getItem('ma4_c')||'[]');
-let usuarios = JSON.parse(localStorage.getItem('ma4_u')||'null');
+let usuarios = null;
+try {
+  const usuariosData = localStorage.getItem('ma4_u');
+  usuarios = usuariosData ? JSON.parse(usuariosData) : null;
+} catch (e) {
+  usuarios = null;
+}
+
 let entregas = JSON.parse(localStorage.getItem('ma4_ent')||'[]');
 
 // Default admin user if none exist or if empty array was saved
-if(!usuarios || !usuarios.length){
+if(!usuarios || !Array.isArray(usuarios) || usuarios.length === 0){
   usuarios=[{id:1,nombre:'Administrador',usuario:'admin',pin:'1234',rol:'admin',activo:true}];
   localStorage.setItem('ma4_u',JSON.stringify(usuarios));
 }
