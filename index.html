@@ -1498,6 +1498,14 @@ function toggleUsuario(userId){
   syncUsersToSupabase();
   renderUsuarios();
   toast(`${user.activo ? '✅ Usuario activado' : '🚫 Usuario desactivado'}`);
+
+  // Si se desactiva el usuario actual, hacer logout
+  if(sesionActual && sesionActual.id === userId && !user.activo){
+    setTimeout(() => {
+      toast('⚠ Tu cuenta fue desactivada');
+      doLogout();
+    }, 500);
+  }
 }
 
 // ═════════════════════════════════════
