@@ -1551,8 +1551,8 @@ window.addEventListener('keydown', e => {
   }
 });
 
-// INIT
-initLogin();
+// INIT - Moved to after Firebase setup
+// initLogin() will be called at the end of Firebase script block
 </script>
 
 <!-- Firebase SDK -->
@@ -1773,6 +1773,9 @@ async function svFirebase() {
 // Override the original sv() function to use Firestore version
 const originalSv = sv;
 sv = svFirebase;
+
+// Initialize login screen (after Firebase is fully loaded)
+initLogin();
 </script>
 
 </body>
