@@ -7,10 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Barlow+Condensed:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#E11919; --navy2:#8B0F0F; --teal:#000000; --teal2:#1a1a1a;
-  --bg:#000000; --w:#fff; --s2:#1a1a1a; --s3:#0d0d0d;
-  --brd:#333333; --brd2:#444444;
-  --txt:#0d2035; --muted:#5a7596; --muted2:#8aa0b8;
+  --navy:#1a3a52; --navy2:#0f2840; --teal:#ff8c00; --teal2:#e67e00;
+  --bg:#0f1419; --w:#fff; --s2:#1a2332; --s3:#141b24;
+  --brd:#2a3a4a; --brd2:#3a4a5a;
+  --txt:#e8eef5; --muted:#8a95a8; --muted2:#6a7588;
   --red:#dc3545; --redb:rgba(220,53,69,.1);
   --grn:#198754; --grnb:rgba(25,135,84,.1);
   --amb:#d97706; --ambb:rgba(217,119,6,.1);
@@ -986,9 +986,9 @@ function saveVenta(){
   else{ventas.unshift(v);toast('✅ Venta registrada')}
   if(!clientes.find(c=>c.nombre===cliente))
     clientes.push({id:Date.now()+1,nombre:cliente,tipo:g('vv-fac'),responsable:g('vv-resp'),rfc:'',tel:'',email:'',credito:0,diasCred:30,direccion:'',notas:''});
-  sv();closeOv('ov-v');renderV();badges();
+  sv();syncVentasToSupabase();syncClientesToSupabase();closeOv('ov-v');renderV();badges();
 }
-function delV(id){if(!confirm('¿Eliminar esta venta?'))return;ventas=ventas.filter(v=>v.id!==id);sv();toast('🗑 Venta eliminada');renderV();badges()}
+function delV(id){if(!confirm('¿Eliminar esta venta?'))return;ventas=ventas.filter(v=>v.id!==id);sv();syncVentasToSupabase();toast('🗑 Venta eliminada');renderV();badges()}
 
 // ═════════════════════════════════════
 // ALMACÉN — COMPLETO
@@ -1127,18 +1127,18 @@ function saveAlm(){
     costo:parseFloat(g('aa-cos'))||0,precio:parseFloat(g('aa-pre'))||0,notas:g('aa-not')};
   if(eAId){almacen=almacen.map(x=>x.id===eAId?p:x);toast('✅ Producto actualizado')}
   else{almacen.unshift(p);toast('✅ Producto agregado')}
-  sv();closeOv('ov-a');renderA();badges();
+  sv();syncAlmacenToSupabase();closeOv('ov-a');renderA();badges();
 }
 function adjS(id,d){
   almacen=almacen.map(p=>p.id===id?{...p,stock:Math.max(0,(p.stock||0)+d)}:p);
-  sv();renderA();badges();
+  sv();syncAlmacenToSupabase();renderA();badges();
 }
 function setS(id,val){
   const n=Math.max(0,parseInt(val)||0);
   almacen=almacen.map(p=>p.id===id?{...p,stock:n}:p);
-  sv();renderA();badges();
+  sv();syncAlmacenToSupabase();renderA();badges();
 }
-function delA(id){if(!confirm('¿Eliminar producto?'))return;almacen=almacen.filter(p=>p.id!==id);sv();toast('🗑 Eliminado');renderA();badges()}
+function delA(id){if(!confirm('¿Eliminar producto?'))return;almacen=almacen.filter(p=>p.id!==id);sv();syncAlmacenToSupabase();toast('🗑 Eliminado');renderA();badges()}
 
 // ═════════════════════════════════════
 // CLIENTES
@@ -1198,9 +1198,9 @@ function saveCliente(){
     diasCred:parseInt(g('cc-dc'))||30,responsable:g('cc-resp'),direccion:g('cc-dir'),notas:g('cc-not')};
   if(eCId){clientes=clientes.map(x=>x.id===eCId?c:x);toast('✅ Cliente actualizado')}
   else{clientes.unshift(c);toast('✅ Cliente registrado')}
-  sv();closeOv('ov-c');renderC();badges();
+  sv();syncClientesToSupabase();closeOv('ov-c');renderC();badges();
 }
-function delC(id){if(!confirm('¿Eliminar cliente?'))return;clientes=clientes.filter(c=>c.id!==id);sv();toast('🗑 Eliminado');renderC();badges()}
+function delC(id){if(!confirm('¿Eliminar cliente?'))return;clientes=clientes.filter(c=>c.id!==id);sv();syncClientesToSupabase();toast('🗑 Eliminado');renderC();badges()}
 
 // ═════════════════════════════════════
 // COMPAC
@@ -1530,13 +1530,42 @@ async function initSupabaseSimple(){
     sbReady = true;
     console.log('✅ Supabase inicializado');
 
-    // Cargar usuarios desde Supabase
-    await loadUsersFromSupabase();
+    // Cargar usuarios
+    try {
+      const { data } = await sbClient.from('usuarios').select('data').limit(1);
+      if(data && data.length > 0 && data[0].data) usuarios = data[0].data;
+      console.log('✅ Usuarios cargados');
+    } catch(e){ console.error('❌ Usuarios:', e); }
 
-    // Configurar listener real-time
+    // Cargar clientes
+    try {
+      const { data } = await sbClient.from('clientes').select('data').limit(1);
+      if(data && data.length > 0 && data[0].data) clientes = data[0].data;
+      console.log('✅ Clientes cargados');
+    } catch(e){ console.error('❌ Clientes:', e); }
+
+    // Cargar ventas
+    try {
+      const { data } = await sbClient.from('ventas').select('data').limit(1);
+      if(data && data.length > 0 && data[0].data) ventas = data[0].data;
+      console.log('✅ Ventas cargadas');
+    } catch(e){ console.error('❌ Ventas:', e); }
+
+    // Cargar almacén
+    try {
+      const { data } = await sbClient.from('almacen').select('data').limit(1);
+      if(data && data.length > 0 && data[0].data) almacen = data[0].data;
+      console.log('✅ Almacén cargado');
+    } catch(e){ console.error('❌ Almacén:', e); }
+
+    // Configurar listeners
     setupUsersListener();
+    setupClientesListener();
+    setupVentasListener();
+    setupAlmacenListener();
+    console.log('✅ Listeners configurados');
   } catch(e){
-    console.error('Supabase init error:', e);
+    console.error('❌ Supabase init error:', e);
   }
 }
 
@@ -1583,6 +1612,158 @@ function setupUsersListener(){
       .subscribe();
   } catch(e){
     console.error('Error en listener:', e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLIENTES SYNC
+// ═══════════════════════════════════════════════════════════════
+async function loadClientesFromSupabase(){
+  console.log('🔄 Cargando clientes...');
+  if(!sbClient) {console.log('⚠ sbClient no existe'); return;}
+  try {
+    const { data } = await sbClient.from('clientes').select('data').limit(1);
+    console.log('📊 Data recibida:', data);
+    if(data && data.length > 0 && data[0].data){
+      clientes = data[0].data;
+    }
+    console.log('✅ Clientes cargados desde Supabase', clientes.length);
+  } catch(e){
+    console.error('❌ Error cargando clientes:', e);
+  }
+}
+
+async function syncClientesToSupabase(){
+  if(!sbClient || !sbReady) return;
+  try {
+    await sbClient.from('clientes').upsert(
+      { id: 1, data: clientes },
+      { onConflict: 'id' }
+    );
+    console.log('✅ Clientes sincronizados con Supabase (' + clientes.length + ' items)');
+  } catch(e){
+    console.error('❌ Error sincronizando clientes:', e);
+  }
+}
+
+function setupClientesListener(){
+  if(!sbClient) return;
+  try {
+    sbClient
+      .channel('clientes-sync')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'clientes' },
+        (payload) => {
+          if(payload.new && payload.new.data){
+            clientes = payload.new.data;
+            renderC();badges();
+            console.log('✅ Clientes actualizados en tiempo real');
+          }
+        }
+      )
+      .subscribe();
+  } catch(e){
+    console.error('Error en listener clientes:', e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VENTAS SYNC
+// ═══════════════════════════════════════════════════════════════
+async function loadVentasFromSupabase(){
+  if(!sbClient) return;
+  try {
+    const { data } = await sbClient.from('ventas').select('data').limit(1);
+    if(data && data.length > 0 && data[0].data){
+      ventas = data[0].data;
+    }
+    console.log('✅ Ventas cargadas desde Supabase', ventas.length);
+  } catch(e){
+    console.error('❌ Error cargando ventas:', e);
+  }
+}
+
+async function syncVentasToSupabase(){
+  if(!sbClient || !sbReady) return;
+  try {
+    await sbClient.from('ventas').upsert(
+      { id: 1, data: ventas },
+      { onConflict: 'id' }
+    );
+    console.log('✅ Ventas sincronizadas con Supabase (' + ventas.length + ' items)');
+  } catch(e){
+    console.error('❌ Error sincronizando ventas:', e);
+  }
+}
+
+function setupVentasListener(){
+  if(!sbClient) return;
+  try {
+    sbClient
+      .channel('ventas-sync')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'ventas' },
+        (payload) => {
+          if(payload.new && payload.new.data){
+            ventas = payload.new.data;
+            renderV();badges();
+            console.log('✅ Ventas actualizadas en tiempo real');
+          }
+        }
+      )
+      .subscribe();
+  } catch(e){
+    console.error('Error en listener ventas:', e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ALMACÉN SYNC
+// ═══════════════════════════════════════════════════════════════
+async function loadAlmacenFromSupabase(){
+  if(!sbClient) return;
+  try {
+    const { data } = await sbClient.from('almacen').select('data').limit(1);
+    if(data && data.length > 0 && data[0].data){
+      almacen = data[0].data;
+    }
+    console.log('✅ Almacén cargado desde Supabase', almacen.length);
+  } catch(e){
+    console.error('❌ Error cargando almacén:', e);
+  }
+}
+
+async function syncAlmacenToSupabase(){
+  if(!sbClient || !sbReady) return;
+  try {
+    await sbClient.from('almacen').upsert(
+      { id: 1, data: almacen },
+      { onConflict: 'id' }
+    );
+    console.log('✅ Almacén sincronizado con Supabase (' + almacen.length + ' items)');
+  } catch(e){
+    console.error('❌ Error sincronizando almacén:', e);
+  }
+}
+
+function setupAlmacenListener(){
+  if(!sbClient) return;
+  try {
+    sbClient
+      .channel('almacen-sync')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'almacen' },
+        (payload) => {
+          if(payload.new && payload.new.data){
+            almacen = payload.new.data;
+            renderA();badges();
+            console.log('✅ Almacén actualizado en tiempo real');
+          }
+        }
+      )
+      .subscribe();
+  } catch(e){
+    console.error('Error en listener almacén:', e);
   }
 }
 
