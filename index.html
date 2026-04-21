@@ -803,11 +803,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
         <div style="font-weight:600;color:var(--navy);margin-bottom:.5rem">☁️ OneDrive</div>
         <p style="font-size:.85rem;color:var(--muted);margin:0">Sincronizar facturas desde Excel en OneDrive automáticamente</p>
       </div>
-      <div class="field ff"><label>📊 Sube el Excel con facturas</label><input type="file" id="excel-facturas-file" accept=".xlsx,.xls,.csv" style="padding:0.5rem;border:2px dashed var(--orange);border-radius:var(--r1);cursor:pointer"></div>
-
-      <div class="field">
-        <button class="btn btn-secondary" onclick="loadExcelFacturas()" id="load-excel-btn">📥 Cargar Excel</button>
-      </div>
+      <div class="field ff"><label>📊 Sube el Excel con facturas</label><input type="file" id="excel-facturas-file" accept=".xlsx,.xls,.csv" style="padding:0.5rem;border:2px dashed var(--orange);border-radius:var(--r1);cursor:pointer"><small style="color:var(--muted);display:block;margin-top:0.25rem">Se carga automáticamente al seleccionar</small></div>
       <div id="excel-load-status" style="margin-top:1rem;padding:.75rem;border-radius:var(--r2);display:none;font-size:.85rem;font-weight:500;background:rgba(70,180,150,.1);color:var(--teal)"></div>
     </div>
 
@@ -1594,17 +1590,20 @@ function renderMisFacturas(datos){
   }
 }
 
-// Cargar Excel desde archivo subido
+// Cargar Excel automáticamente cuando selecciona archivo
+document.addEventListener('DOMContentLoaded', () => {
+  const fileInput = document.getElementById('excel-facturas-file');
+  if(fileInput){
+    fileInput.addEventListener('change', loadExcelFacturas);
+  }
+});
+
 function loadExcelFacturas(){
   const fileInput = document.getElementById('excel-facturas-file');
   const file = fileInput?.files?.[0];
   const statusDiv = document.getElementById('excel-load-status');
 
   if(!file){
-    statusDiv.style.display = 'block';
-    statusDiv.style.background = 'rgba(220,53,69,.1)';
-    statusDiv.style.color = 'var(--red)';
-    statusDiv.textContent = '❌ Selecciona un archivo Excel primero';
     return;
   }
 
@@ -1621,8 +1620,11 @@ function loadExcelFacturas(){
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
+      console.log('📊 Total de filas en Excel:', rows.length);
+      console.log('📋 Primeras 3 filas:', rows.slice(0, 3));
+
       if(rows.length === 0){
-        throw new Error('El Excel está vacío');
+        throw new Error('El Excel está vacío o no tiene datos');
       }
 
       // Agrupar por vendedor
@@ -1632,8 +1634,20 @@ function loadExcelFacturas(){
         'Otros': []
       };
 
+      let conDatos = 0;
+      let sinVendedor = 0;
+
       rows.forEach(row => {
-        const vendedor = (row.VENDEDOR || '').trim().toLowerCase();
+        const vendedor = (row.VENDEDOR || '').trim();
+        const vendedorLower = vendedor.toLowerCase();
+
+        // Si no tiene vendedor, saltar
+        if(!vendedor){
+          sinVendedor++;
+          return;
+        }
+
+        conDatos++;
 
         const factura = {
           numero: row.FACTURA || '',
@@ -1652,14 +1666,16 @@ function loadExcelFacturas(){
           link: row.LINK || '',
           estatus: row.ESTATUS || '',
           diasVencidos: row['DIAS VENCIDOS'] || '',
-          fechaPago: row['FECHA DE PAGO'] || ''
+          fechaPago: row['FECHA DE PAGO'] || '',
+          vendedor: vendedor
         };
 
-        if(vendedor.includes('estefan')){
+        // Clasificar flexible
+        if(vendedorLower.includes('estefan') || vendedorLower.includes('estefañ')){
           facturasPorVendedor['Estefanya'].push(factura);
-        } else if(vendedor.includes('josue') || vendedor.includes('josu')){
+        } else if(vendedorLower.includes('josue') || vendedorLower.includes('josu') || vendedorLower.includes('josé')){
           facturasPorVendedor['Josué'].push(factura);
-        } else if(row.VENDEDOR){
+        } else {
           facturasPorVendedor['Otros'].push(factura);
         }
       });
@@ -1667,12 +1683,17 @@ function loadExcelFacturas(){
       localStorage.setItem('onedrive_facturas', JSON.stringify(facturasPorVendedor));
 
       const total = facturasPorVendedor['Estefanya'].length + facturasPorVendedor['Josué'].length;
-      statusDiv.textContent = `✅ Excel cargado: ${total} facturas (${facturasPorVendedor['Estefanya'].length} Estefanya, ${facturasPorVendedor['Josué'].length} Josué)`;
+      const otros = facturasPorVendedor['Otros'].length;
+      const msg = `✅ Excel cargado: ${total} facturas (${facturasPorVendedor['Estefanya'].length} Estefanya, ${facturasPorVendedor['Josué'].length} Josué)${otros > 0 ? `, ${otros} otros` : ''}`;
 
+      statusDiv.textContent = msg;
       renderMisFacturas(facturasPorVendedor);
-      toast(`✅ Excel cargado: ${total} facturas`);
+      toast(msg);
+
+      console.log('✅ Cargado:', facturasPorVendedor);
 
     } catch(error){
+      console.error('Error:', error);
       statusDiv.style.background = 'rgba(220,53,69,.1)';
       statusDiv.style.color = 'var(--red)';
       statusDiv.textContent = '❌ Error: ' + error.message;
