@@ -356,7 +356,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 
 <!-- MAIN -->
 <div class="main">
-  <div class="topbar">
+  <div class="topbar" id="topbar">
     <div class="tb-left">
       <button class="menu-btn" id="menuBtn" onclick="openSidebar()">☰</button>
       <div>
@@ -1513,8 +1513,10 @@ if(!sesionActual || usuarios.length === 0){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.getElementById('page-login').classList.add('on');
   // OCULTAR SIDEBAR sin sesión
-  document.getElementById('sb').style.display = 'none';
-  document.getElementById('topbar').style.display = 'none';
+  const sbEl = document.getElementById('sb');
+  const tbEl = document.getElementById('topbar');
+  if(sbEl) sbEl.style.cssText = 'display: none !important;';
+  if(tbEl) tbEl.style.cssText = 'display: none !important;';
 } else {
   // Mostrar info de sesión si existe
   const sessionInfo = document.getElementById('sessionInfo');
@@ -1647,8 +1649,10 @@ function doLogin(){
   }
 
   // Mostrar sidebar y topbar después de login
-  document.getElementById('sb').style.display = '';
-  document.getElementById('topbar').style.display = '';
+  const sbEl = document.getElementById('sb');
+  const tbEl = document.getElementById('topbar');
+  if(sbEl) sbEl.style.cssText = 'display: flex !important;';
+  if(tbEl) tbEl.style.cssText = 'display: flex !important;';
 
   goPage('dashboard');
   showAdminPanel();
@@ -1669,8 +1673,10 @@ function doLogout(){
   document.getElementById('page-login').classList.add('on');
 
   // Ocultar sidebar y topbar sin sesión
-  document.getElementById('sb').style.display = 'none';
-  document.getElementById('topbar').style.display = 'none';
+  const sbEl = document.getElementById('sb');
+  const tbEl = document.getElementById('topbar');
+  if(sbEl) sbEl.style.cssText = 'display: none !important;';
+  if(tbEl) tbEl.style.cssText = 'display: none !important;';
 
   // Limpiar campos de login
   document.getElementById('login-usuario').value = '';
