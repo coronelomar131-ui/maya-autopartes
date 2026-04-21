@@ -1633,10 +1633,23 @@ function loadExcelFacturas(){
         throw new Error('El Excel está vacío o no tiene datos');
       }
 
+      // Buscar la columna de vendedor (puede ser VENDEDOR, Vendedor, vendor, etc)
+      let vendedorCol = null;
+      if(rows.length > 0){
+        const cols = Object.keys(rows[0]);
+        vendedorCol = cols.find(c =>
+          c.toLowerCase().includes('vendor') ||
+          c.toLowerCase().includes('vendedor') ||
+          c.toLowerCase().includes('vend')
+        );
+      }
+
+      console.log('🔎 Columna de vendedor detectada:', vendedorCol);
+
       // Detectar vendedores únicos y contar facturas
       const vendedoresMap = {};
       rows.forEach(row => {
-        const v = (row.VENDEDOR || '').trim();
+        const v = vendedorCol ? (row[vendedorCol] || '').trim() : '';
         if(v) {
           vendedoresMap[v] = (vendedoresMap[v] || 0) + 1;
         }
