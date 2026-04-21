@@ -1541,53 +1541,48 @@ function deleteNota(id){
 // Cuando conectes el Excel, aquí se cargan los datos
 function renderMisFacturas(datos){
   const estDiv = document.getElementById('facturas-estefanya');
-  const josDiv = document.getElementById('facturas-josue');
   const emptyEst = document.getElementById('empty-estefanya');
-  const emptyJos = document.getElementById('empty-josue');
 
-  // Usar datos pasados o intentar obtener del localStorage
-  let facturas = datos || JSON.parse(localStorage.getItem('onedrive_facturas') || '{}');
+  // Obtener todas las facturas
+  let allFacturas = [];
 
-  const estFacturas = facturas['Estefanya'] || [];
-  const josFacturas = facturas['Josué'] || [];
+  if(datos && typeof datos === 'object'){
+    // Si viene un objeto con vendedores, extraer todas
+    Object.values(datos).forEach(arr => {
+      if(Array.isArray(arr)) allFacturas.push(...arr);
+    });
+  } else {
+    // Si viene del localStorage
+    const stored = JSON.parse(localStorage.getItem('onedrive_facturas') || '{}');
+    Object.values(stored).forEach(arr => {
+      if(Array.isArray(arr)) allFacturas.push(...arr);
+    });
+  }
 
-  // Limpiar HTML
+  // Limpiar
   estDiv.innerHTML = '';
-  josDiv.innerHTML = '';
 
-  // COLUMNA ESTEFANYA
-  if (estFacturas.length === 0) {
+  // Mostrar todas las facturas en una sola columna
+  if (allFacturas.length === 0) {
     emptyEst.style.display = 'block';
-    estDiv.innerHTML = '';
   } else {
     emptyEst.style.display = 'none';
-    estDiv.innerHTML = estFacturas.map(f => `
-      <div class="factura-item" style="padding:0.75rem;border-left:3px solid var(--orange);margin-bottom:0.5rem;background:rgba(255,140,0,.05);border-radius:var(--r1)">
+    estDiv.innerHTML = allFacturas.map(f => `
+      <div class="factura-item" style="padding:0.75rem;border-left:3px solid var(--navy);margin-bottom:0.5rem;background:rgba(26,58,82,.05);border-radius:var(--r1)">
         <div style="font-weight:600;color:var(--navy);margin-bottom:0.25rem">#${f.numero}</div>
         <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.25rem">${f.cliente}</div>
-        <div style="font-size:0.9rem;font-weight:500;color:var(--orange)">$${parseFloat(f.total || 0).toFixed(2)}</div>
+        <div style="font-size:0.9rem;font-weight:500;color:var(--navy)">$${parseFloat(f.total || 0).toFixed(2)}</div>
         <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem">${f.fecha || ''}</div>
         <div style="font-size:0.75rem;background:${f.estatus === 'Pagado' ? 'rgba(25,135,84,.2)' : 'rgba(220,53,69,.2)'};color:${f.estatus === 'Pagado' ? 'var(--grn)' : 'var(--red)'};padding:0.25rem 0.5rem;border-radius:2px;margin-top:0.25rem;display:inline-block">${f.estatus || 'Pendiente'}</div>
       </div>
     `).join('');
   }
 
-  // COLUMNA JOSUÉ
-  if (josFacturas.length === 0) {
-    emptyJos.style.display = 'block';
-    josDiv.innerHTML = '';
-  } else {
-    emptyJos.style.display = 'none';
-    josDiv.innerHTML = josFacturas.map(f => `
-      <div class="factura-item" style="padding:0.75rem;border-left:3px solid var(--teal);margin-bottom:0.5rem;background:rgba(70,180,150,.05);border-radius:var(--r1)">
-        <div style="font-weight:600;color:var(--navy);margin-bottom:0.25rem">#${f.numero}</div>
-        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.25rem">${f.cliente}</div>
-        <div style="font-size:0.9rem;font-weight:500;color:var(--teal)">$${parseFloat(f.total || 0).toFixed(2)}</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem">${f.fecha || ''}</div>
-        <div style="font-size:0.75rem;background:${f.estatus === 'Pagado' ? 'rgba(25,135,84,.2)' : 'rgba(220,53,69,.2)'};color:${f.estatus === 'Pagado' ? 'var(--grn)' : 'var(--red)'};padding:0.25rem 0.5rem;border-radius:2px;margin-top:0.25rem;display:inline-block">${f.estatus || 'Pendiente'}</div>
-      </div>
-    `).join('');
-  }
+  // Ocultar segunda columna
+  const josDiv = document.getElementById('facturas-josue');
+  if(josDiv) josDiv.style.display = 'none';
+  const emptyJos = document.getElementById('empty-josue');
+  if(emptyJos) emptyJos.style.display = 'none';
 }
 
 // Cargar Excel automáticamente cuando selecciona archivo
