@@ -673,7 +673,10 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
   <div class="modal">
     <div class="modal-hd">Configuración de Empresa</div>
     <div class="modal-bd">
-      <div class="field ff"><label>Nombre *</label><input type="text" id="cfg-nom" placeholder="Maya Autopartes"></div>
+      <div class="field ff"><label>Nombre *</label><input type="text" id="cfg-nom" placeholder="Tu Empresa"></div>
+      <div class="field"><label>Descripción (para facturas)</label><input type="text" id="cfg-desc" placeholder="Ej: Comercializadora de autopartes seminuevas"></div>
+      <div class="field"><label>Logo (para facturas)</label><input type="file" id="cfg-logo" accept="image/*"></div>
+      <div id="cfg-logo-preview" style="margin-top:.5rem;text-align:center;max-width:120px"></div>
       <div class="field"><label>RFC</label><input type="text" id="cfg-rfc" placeholder="RFC000000000"></div>
       <div class="field"><label>Teléfono</label><input type="tel" id="cfg-tel" placeholder="(000) 000-0000"></div>
       <div class="field"><label>Email</label><input type="email" id="cfg-email"></div>
@@ -1262,9 +1265,25 @@ if(window.innerWidth<900)document.getElementById('menuBtn').style.display='flex'
 window.addEventListener('resize',()=>{document.getElementById('menuBtn').style.display=window.innerWidth<900?'flex':'none'});
 // INIT
 // ═ FACTURAS ═
-let cfg=JSON.parse(localStorage.getItem('ma4_cfg')||'{"nombre":"Maya Autopartes","rfc":"","tel":"","email":"","dir":""}');
-function saveCfg(){const g=id=>(document.getElementById(id)?.value||'').trim();cfg={nombre:g('cfg-nom'),rfc:g('cfg-rfc'),tel:g('cfg-tel'),email:g('cfg-email'),dir:g('cfg-dir')};localStorage.setItem('ma4_cfg',JSON.stringify(cfg));toast('✅ Guardado');closeOv('ov-cfg')}
-function openCfgModal(){const f=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};f('cfg-nom',cfg.nombre);f('cfg-rfc',cfg.rfc);f('cfg-tel',cfg.tel);f('cfg-email',cfg.email);f('cfg-dir',cfg.dir);document.getElementById('ov-cfg').classList.add('on')}
+let cfg=JSON.parse(localStorage.getItem('ma4_cfg')||'{"nombre":"Tu Empresa","descripcion":"","logo":"","rfc":"","tel":"","email":"","dir":""}');
+let logoBase64Cfg='';
+function saveCfg(){
+  const g=id=>(document.getElementById(id)?.value||'').trim();
+  cfg={nombre:g('cfg-nom'),descripcion:g('cfg-desc'),logo:logoBase64Cfg,rfc:g('cfg-rfc'),tel:g('cfg-tel'),email:g('cfg-email'),dir:g('cfg-dir')};
+  localStorage.setItem('ma4_cfg',JSON.stringify(cfg));
+  logoBase64=logoBase64Cfg;
+  toast('✅ Guardado');closeOv('ov-cfg')
+}
+function openCfgModal(){
+  const f=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};
+  f('cfg-nom',cfg.nombre);f('cfg-desc',cfg.descripcion);f('cfg-rfc',cfg.rfc);f('cfg-tel',cfg.tel);f('cfg-email',cfg.email);f('cfg-dir',cfg.dir);
+  logoBase64Cfg=cfg.logo||'';
+  const preview=document.getElementById('cfg-logo-preview');
+  if(logoBase64Cfg){preview.innerHTML='<img src="'+logoBase64Cfg+'" style="max-width:100%;height:auto">';}else{preview.innerHTML=''}
+  const logoInput=document.getElementById('cfg-logo');
+  if(logoInput){logoInput.onchange=(e)=>{const file=e.target.files[0];if(file){const reader=new FileReader();reader.onload=(ev)=>{logoBase64Cfg=ev.target.result;preview.innerHTML='<img src="'+logoBase64Cfg+'" style="max-width:100%;height:auto">'};reader.readAsDataURL(file)}}};
+  document.getElementById('ov-cfg').classList.add('on')
+}
 function renderF(){const q=(document.getElementById('f-s')?.value||'').toLowerCase();const est=document.getElementById('f-estado')?.value||'';const data=ventas.filter(v=>{if(v.factura!=='con')return false;if(q&&!`${v.cliente}`.toLowerCase().includes(q))return false;if(est&&v.cobro!==est)return false;return true}).sort((a,b)=>new Date(b.fechaFactura||b.fecha)-new Date(a.fechaFactura||a.fecha));document.getElementById('f-empty').style.display=!ventas.some(v=>v.factura==='con')?'flex':'none';document.getElementById('f-g').innerHTML=data.length===0&&ventas.some(v=>v.factura==='con')?`<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted2)">Sin resultados</div>`:data.map(v=>{const est=v.cobro==='cobrado'?'pagada':'pendiente';const col=est==='pagada'?'var(--grn)':'var(--red)';return`<div class="f-card"><div class="fc-hd"><div class="fc-num">#${String(v.id).slice(-6)}</div><span class="badge" style="color:${col};background:${est==='pagada'?'rgba(25,135,84,.1)':'rgba(220,53,69,.1)'};border:1px solid ${est==='pagada'?'rgba(25,135,84,.2)':'rgba(220,53,69,.2)'};">${est}</span></div><div class="fc-info"><div class="fci"><span class="fcl">Cliente</span><span class="fcv">${v.cliente}</span></div><div class="fci"><span class="fcl">Fecha</span><span class="fcv">${v.fecha}</span></div></div><div class="fc-amt">${fmt(v.total)}</div><div class="fc-acts"><button class="btn btn-ghost btn-xs" onclick="viewFactura(${v.id})">Ver</button><button class="btn btn-primary btn-xs" onclick="printFactura(${v.id})">Imprimir</button><button class="btn btn-teal btn-xs" onclick="generarNotaPDF(${v.id})">📥 PDF</button></div></div>`}).join('')}
 function viewFactura(id){const v=ventas.find(x=>x.id===id);if(!v)return;const html=`<html><head><style>body{font-family:Arial;padding:20px;background:#f5f5f5}.fac{background:white;padding:40px;margin:0 auto;max-width:900px;box-shadow:0 0 20px rgba(0,0,0,0.1)}h1{color:#1E4F7A;margin:0}p{color:#666;font-size:12px;margin:2px 0}.hd{display:flex;justify-content:space-between;border-bottom:3px solid #1E4F7A;padding-bottom:20px;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin:20px 0}th{background:#1E4F7A;color:white;padding:10px;text-align:left}td{padding:8px;border-bottom:1px solid #ddd}.tot{text-align:right;font-size:18px;font-weight:bold;color:#1E4F7A;margin-top:20px}@media print{body{background:white}.fac{box-shadow:none;padding:0}}</style></head><body><div class="fac"><div class="hd"><div><h1>${cfg.nombre}</h1><p>RFC: ${cfg.rfc}</p><p>${cfg.tel} | ${cfg.email}</p><p>${cfg.dir}</p></div><div style="text-align:right"><h2>FACTURA</h2><p>#${String(v.id).slice(-6)}</p><p>Fecha: ${v.fecha}</p></div></div><div><h3>Cliente</h3><p><strong>${v.cliente}</strong></p></div><table><tr><th>Concepto</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr><tr><td>Venta</td><td>${v.cantidad}</td><td>${fmt(v.total/v.cantidad)}</td><td>${fmt(v.total)}</td></tr></table><div class="tot">TOTAL: ${fmt(v.total)}</div><p style="margin-top:30px;color:#999;font-size:11px">Estado: ${v.cobro==='cobrado'?'PAGADA':'PENDIENTE'}</p></div></body></html>`;const w=window.open('','','width=900,height=1000');w.document.write(html);w.document.close()}
 function printFactura(id){viewFactura(id);setTimeout(()=>{window.print()},500)}
@@ -1882,16 +1901,10 @@ window.addEventListener('load', () => {
 <script>
 let logoBase64 = '';
 
-// Cargar logo al iniciar
-(async () => {
-  try {
-    const res = await fetch('logo.jpg');
-    const blob = await res.blob();
-    const reader = new FileReader();
-    reader.onload = () => { logoBase64 = reader.result; };
-    reader.readAsDataURL(blob);
-  } catch(e) { console.log('Logo no disponible'); }
-})();
+// Cargar logo desde configuración
+window.addEventListener('load', () => {
+  if(cfg && cfg.logo) { logoBase64 = cfg.logo; }
+});
 
 // Generar Nota en PDF
 function generarNotaPDF(ventaId){
@@ -1901,9 +1914,9 @@ function generarNotaPDF(ventaId){
   const html = `
     <div style="font-family:Arial;padding:20px;max-width:800px;background:#fff">
       <div style="text-align:center;margin-bottom:30px">
-        <img src="${logoBase64 || 'logo.jpg'}" style="max-width:120px;height:auto;margin-bottom:10px">
-        <h2 style="margin:5px 0;color:#000">MAYA AUTOPARTES</h2>
-        <p style="margin:0;color:#000;font-size:12px">Comercializadora de autopartes seminuevas</p>
+        ${logoBase64 || cfg.logo ? `<img src="${logoBase64 || cfg.logo}" style="max-width:120px;height:auto;margin-bottom:10px">` : ''}
+        <h2 style="margin:5px 0;color:#000">${cfg.nombre}</h2>
+        ${cfg.descripcion ? `<p style="margin:0;color:#000;font-size:12px">${cfg.descripcion}</p>` : ''}
       </div>
 
       <div style="border:1px solid #ddd;padding:15px;margin-bottom:20px;background:#f5f5f5">
@@ -1934,7 +1947,7 @@ function generarNotaPDF(ventaId){
       </div>
 
       <div style="margin-top:30px;padding-top:20px;border-top:1px solid #ddd;text-align:center;color:#000;font-size:11px">
-        <p style="margin:0">Generado automáticamente por Maya Autopartes</p>
+        <p style="margin:0">Generado por ${cfg.nombre}</p>
         <p style="margin:0">${new Date().toLocaleString('es-MX')}</p>
       </div>
     </div>
