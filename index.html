@@ -1628,14 +1628,17 @@ function loadExcelFacturas(){
         throw new Error('El Excel está vacío o no tiene datos');
       }
 
-      // Buscar la columna de vendedor (puede ser VENDEDOR, Vendedor, vendor, etc)
+      // Buscar la columna de vendedor (puede ser VENDEDOR, nom_prov, vendor, etc)
       let vendedorCol = null;
       if(rows.length > 0){
         const cols = Object.keys(rows[0]);
         vendedorCol = cols.find(c =>
           c.toLowerCase().includes('vendor') ||
           c.toLowerCase().includes('vendedor') ||
-          c.toLowerCase().includes('vend')
+          c.toLowerCase().includes('vend') ||
+          c.toLowerCase().includes('nom_prov') ||
+          c.toLowerCase().includes('nom') ||
+          c.toLowerCase().includes('prov')
         );
       }
 
