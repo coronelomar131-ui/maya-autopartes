@@ -1615,112 +1615,34 @@ function loadExcelFacturas(){
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
-      console.log('📊 Total de filas en Excel:', rows.length);
-      console.log('📋 Primeras 3 filas:', rows.slice(0, 3));
-
-      // Mostrar todas las columnas
-      if(rows.length > 0){
-        console.log('📑 Columnas del Excel:', Object.keys(rows[0]));
-        console.log('📝 Primer fila completa:', rows[0]);
-      }
+      console.log('📊 Total de filas:', rows.length);
 
       if(rows.length === 0){
-        throw new Error('El Excel está vacío o no tiene datos');
+        throw new Error('El Excel está vacío');
       }
 
-      // Buscar la columna de vendedor (puede ser VENDEDOR, nom_prov, vendor, etc)
-      let vendedorCol = null;
-      if(rows.length > 0){
-        const cols = Object.keys(rows[0]);
-        vendedorCol = cols.find(c =>
-          c.toLowerCase().includes('vendor') ||
-          c.toLowerCase().includes('vendedor') ||
-          c.toLowerCase().includes('vend') ||
-          c.toLowerCase().includes('nom_prov') ||
-          c.toLowerCase().includes('nom') ||
-          c.toLowerCase().includes('prov')
-        );
-      }
+      // Simplemente guardar todas las filas como facturas
+      const allFacturas = rows.map(row => ({
+        numero: row.C4762 || row.FACTURA || '',
+        cliente: row.nom_prov || row.Cliente || '',
+        fecha: row['FECHA DE PAGO'] || row.Fecha || '',
+        cantidad: row[' cantidad '] || row.Piezas || '',
+        total: parseFloat((row['TOTAL='] || '0').toString().replace(/[$,]/g, '')) || 0,
+        estatus: row.ESTADO || row.ESTATUS || '',
+        vendedor: row.nom_prov || ''
+      })).filter(f => f.numero); // Solo filas con número de factura
 
-      console.log('🔎 Columna de vendedor detectada:', vendedorCol);
+      console.log('✅ Facturas procesadas:', allFacturas.length);
 
-      // Detectar vendedores únicos y contar facturas
-      const vendedoresMap = {};
-      rows.forEach(row => {
-        const v = vendedorCol ? (row[vendedorCol] || '').trim() : '';
-        if(v) {
-          vendedoresMap[v] = (vendedoresMap[v] || 0) + 1;
-        }
-      });
+      localStorage.setItem('onedrive_facturas', JSON.stringify({ 'Todas': allFacturas }));
 
-      // Ordenar por cantidad de facturas y tomar los 2 principales
-      const vendedoresOrdenados = Object.entries(vendedoresMap)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 2)
-        .map(([nombre]) => nombre);
-
-      console.log('📊 Vendedores encontrados:', vendedoresMap);
-      console.log('🎯 Columna 1:', vendedoresOrdenados[0]);
-      console.log('🎯 Columna 2:', vendedoresOrdenados[1]);
-
-      // Agrupar en dos columnas (automático)
-      const facturasPorVendedor = {
-        [vendedoresOrdenados[0] || 'Columna 1']: [],
-        [vendedoresOrdenados[1] || 'Columna 2']: [],
-        'Otros': []
-      };
-
-      rows.forEach(row => {
-        const vendedor = (row.VENDEDOR || '').trim();
-
-        // Si no tiene vendedor, saltar
-        if(!vendedor) return;
-
-        const factura = {
-          numero: row.FACTURA || '',
-          cliente: row.Cliente || '',
-          fecha: row.Fecha || '',
-          neto: parseFloat(row.Neto) || 0,
-          iva: parseFloat(row.IVA) || 0,
-          total: parseFloat(row.Total) || 0,
-          saldo: parseFloat(row.Saldo) || 0,
-          producto: row.PRODUCTO || '',
-          marca: row.MARCA || '',
-          piezas: row.Piezas || '',
-          oc: row.OC || '',
-          reporte: row.REPORTE || '',
-          guia: row.GUIA || '',
-          link: row.LINK || '',
-          estatus: row.ESTATUS || '',
-          diasVencidos: row['DIAS VENCIDOS'] || '',
-          fechaPago: row['FECHA DE PAGO'] || '',
-          vendedor: vendedor
-        };
-
-        // Asignar a su columna
-        if(vendedor === vendedoresOrdenados[0]){
-          facturasPorVendedor[vendedoresOrdenados[0]].push(factura);
-        } else if(vendedor === vendedoresOrdenados[1]){
-          facturasPorVendedor[vendedoresOrdenados[1]].push(factura);
-        } else {
-          facturasPorVendedor['Otros'].push(factura);
-        }
-      });
-
-      localStorage.setItem('onedrive_facturas', JSON.stringify(facturasPorVendedor));
-
-      const total = facturasPorVendedor['Estefanya'].length + facturasPorVendedor['Josué'].length;
-      const otros = facturasPorVendedor['Otros'].length;
-      const msg = `✅ Excel cargado: ${total} facturas (${facturasPorVendedor['Estefanya'].length} Estefanya, ${facturasPorVendedor['Josué'].length} Josué)${otros > 0 ? `, ${otros} otros` : ''}`;
-
+      const msg = `✅ Excel cargado: ${allFacturas.length} facturas`;
       statusDiv.textContent = msg;
-      renderMisFacturas(facturasPorVendedor);
+      renderMisFacturas({ 'Todas': allFacturas });
       toast(msg);
 
-      console.log('✅ Cargado:', facturasPorVendedor);
-
     } catch(error){
-      console.error('Error:', error);
+      console.error('❌ Error:', error);
       statusDiv.style.background = 'rgba(220,53,69,.1)';
       statusDiv.style.color = 'var(--red)';
       statusDiv.textContent = '❌ Error: ' + error.message;
