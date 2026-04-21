@@ -1720,14 +1720,30 @@ function setupVentasListener(){
 // ═══════════════════════════════════════════════════════════════
 // ALMACÉN SYNC
 // ═══════════════════════════════════════════════════════════════
+async function importInventarioFromJSON(){
+  try {
+    const response = await fetch('inventario.json');
+    if(!response.ok) return;
+    const items = await response.json();
+    almacen = items;
+    await syncAlmacenToSupabase();
+    console.log('✅ Inventario importado:', items.length);
+  } catch(e){
+    console.log('Inventario.json no encontrado (normal)');
+  }
+}
+
 async function loadAlmacenFromSupabase(){
   if(!sbClient) return;
   try {
     const { data } = await sbClient.from('almacen').select('data').limit(1);
-    if(data && data.length > 0 && data[0].data){
+    if(data && data.length > 0 && data[0].data && data[0].data.length > 0){
       almacen = data[0].data;
+      console.log('✅ Almacén cargado desde Supabase', almacen.length);
+    } else {
+      // Si almacén está vacío, intenta cargar desde JSON
+      await importInventarioFromJSON();
     }
-    console.log('✅ Almacén cargado desde Supabase', almacen.length);
   } catch(e){
     console.error('❌ Error cargando almacén:', e);
   }
