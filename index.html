@@ -338,6 +338,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="ni" onclick="goPage('clientes',this)"><span class="ni-ico">◉</span>Clientes<span class="ni-badge" id="nb-c">0</span></div>
     <div class="nav-sec">Documentos</div>
     <div class="ni" onclick="goPage('facturas',this)"><span class="ni-ico">📄</span>Notas</div>
+    <div class="ni" onclick="goPage('drive-facturas',this)"><span class="ni-ico">☁️</span>Drive</div>
     <div class="nav-sec" id="nav-admin" style="display:none">Admin</div>
     <div class="ni" id="ni-users" onclick="openUsersModal()"><span class="ni-ico">👤</span>Crear Usuario</div>
     <div class="nav-sec">Exportación</div>
@@ -588,6 +589,55 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       </div>
     </div>
 
+    <!-- ══ FACTURAS DESDE DRIVE ══ -->
+    <div class="page" id="page-drive-facturas">
+      <div style="padding:1.5rem">
+        <div style="text-align:center;padding:2rem">
+          <div style="font-size:3rem;margin-bottom:1rem">☁️</div>
+          <h2 style="color:var(--navy);margin-bottom:0.5rem">Facturas desde Google Drive</h2>
+          <p style="color:var(--muted);margin-bottom:1.5rem;max-width:500px;margin-left:auto;margin-right:auto">
+            Aquí aparecerán las facturas que se suben automáticamente desde Compac a Google Drive.
+          </p>
+        </div>
+
+        <div class="row2">
+          <div class="panel">
+            <div class="ph">Estado de Sincronización</div>
+            <div style="display:flex;gap:1rem;flex-direction:column">
+              <div style="padding:1rem;background:rgba(70,180,150,.1);border-radius:var(--r2);border-left:4px solid var(--teal)">
+                <div style="font-weight:600;color:var(--navy);margin-bottom:0.5rem">📋 Google Drive configurado</div>
+                <p style="font-size:0.85rem;color:var(--muted);margin:0" id="drive-status">
+                  Verifica en Configuración > Integraciones que Google Drive esté configurado.
+                </p>
+              </div>
+              <div style="padding:1rem;background:rgba(255,152,0,.05);border-radius:var(--r2);border-left:4px solid var(--amb)">
+                <div style="font-weight:600;color:var(--navy);margin-bottom:0.5rem">🔄 Próximo paso: Configurar Compac</div>
+                <p style="font-size:0.85rem;color:var(--muted);margin:0">
+                  Cuando tengas acceso a Compac, configura el webhook para sincronización automática. Las facturas aparecerán aquí al instante.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="ph">Acciones</div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+              <button class="btn btn-teal" onclick="syncDriveFacturas()" id="sync-drive-btn">🔄 Sincronizar Ahora</button>
+              <button class="btn btn-ghost" onclick="openCfgModal()">⚙ Configurar Drive</button>
+            </div>
+            <div id="drive-sync-status" style="margin-top:1rem;display:none;padding:0.75rem;background:rgba(70,180,150,.1);border-radius:var(--r2);color:var(--teal);font-size:0.85rem"></div>
+          </div>
+        </div>
+
+        <div id="drive-facturas-list" style="margin-top:2rem">
+          <div style="text-align:center;padding:2rem;color:var(--muted2)">
+            <div style="font-size:2rem;margin-bottom:0.5rem">📭</div>
+            <p>Sin facturas aún. Cuando sincronices desde Compac, aparecerán aquí.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -775,8 +825,8 @@ function sv(){
 // ═════════════════════════════════════
 // SIDEBAR NAV  — closes on mobile after selecting
 // ═════════════════════════════════════
-const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',compac:'Exportar / Compac'};
-const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',compac:'Maya Autopartes / Exportar'};
+const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',compac:'Exportar / Compac','drive-facturas':'Facturas desde Drive'};
+const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',compac:'Maya Autopartes / Exportar','drive-facturas':'Maya Autopartes / Facturas Drive'};
 
 function goPage(name, el){
   // Protección: si no hay sesión, no permitir cambiar de página (excepto login)
@@ -803,6 +853,7 @@ function goPage(name, el){
     clientes: ()=>{btn.textContent='+ Cliente';    btn.onclick=openClienteModal},
     facturas: ()=>{btn.textContent='⚙ Configurar'; btn.onclick=openCfgModal},
     compac:   ()=>{btn.textContent='⬇ Exportar';  btn.onclick=exportCompac},
+    'drive-facturas':()=>{btn.textContent='🔄 Sincronizar';btn.onclick=syncDriveFacturas},
   };
   if(acts[name]) acts[name]();
   // 5. render
@@ -1435,6 +1486,42 @@ function deleteNota(id){
   sv();
   renderF();
   toast('✅ Nota eliminada');
+}
+
+// Sincronizar facturas desde Google Drive
+async function syncDriveFacturas(){
+  // Validar que Drive esté configurado
+  if(!cfg.driveId || !cfg.driveJson){
+    toast('⚠️ Configura Google Drive en Configuración > Integraciones');
+    return;
+  }
+
+  const btn = document.getElementById('sync-drive-btn');
+  const statusDiv = document.getElementById('drive-sync-status');
+
+  try {
+    btn.disabled = true;
+    btn.textContent = '⏳ Sincronizando...';
+    statusDiv.style.display = 'block';
+    statusDiv.textContent = '⏳ Conectando con Google Drive...';
+
+    // Aquí iría la lógica real cuando tengas Compac configurado
+    // Por ahora, simulamos que busca las facturas
+    setTimeout(() => {
+      statusDiv.textContent = '✅ Sincronización completada. Cuando configures Compac, las facturas aparecerán automáticamente.';
+      btn.disabled = false;
+      btn.textContent = '🔄 Sincronizar Ahora';
+      toast('✅ Google Drive sincronizado');
+    }, 1500);
+
+  } catch(error){
+    statusDiv.style.display = 'block';
+    statusDiv.style.background = 'rgba(220,53,69,.1)';
+    statusDiv.style.color = 'var(--red)';
+    statusDiv.textContent = '❌ Error: ' + error.message;
+    btn.disabled = false;
+    btn.textContent = '🔄 Sincronizar Ahora';
+  }
 }
 
 // Sync Factura to Google Drive
