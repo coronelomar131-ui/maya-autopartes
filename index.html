@@ -461,7 +461,13 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
             <button class="vt-btn on" id="vt-cards" onclick="setView('cards')">⊞ Tarjetas</button>
             <button class="vt-btn" id="vt-table" onclick="setView('table')">≡ Lista</button>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="openAlmModal()">+ Nuevo Producto</button>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn-primary btn-sm" onclick="openAlmModal()">+ Nuevo Producto</button>
+            <label class="btn btn-teal btn-sm" style="cursor:pointer;margin:0">
+              📥 Importar Excel
+              <input type="file" id="excel-import" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarExcel(event)">
+            </label>
+          </div>
         </div>
       </div>
       <!-- CARD view -->
@@ -1864,8 +1870,58 @@ window.addEventListener('load', () => {
 });
 </script>
 
+<!-- XLSX Library for Excel import -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
 <!-- Supabase JS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// Importar Excel
+async function importarExcel(e){
+  const file = e.target.files[0];
+  if(!file) return;
+
+  try {
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet);
+
+    if(!rows.length) { toast('⚠ Excel vacío'); return; }
+
+    // Mapear columnas
+    const productos = rows.map((row, idx) => ({
+      id: Date.now() + idx,
+      nombre: row.nombre || row.Nombre || row.NOMBRE || row.Producto || row.producto || '',
+      sku: row.sku || row.SKU || row.Sku || '',
+      precio: parseFloat(row.precio || row.Precio || row.PRECIO || 0),
+      stock: parseInt(row.stock || row.Stock || row.STOCK || 1),
+      costo: parseFloat(row.costo || row.Costo || row.COSTO || 0),
+      categoria: row.categoria || row.Categoria || row.CATEGORIA || 'Puertas',
+      min: parseInt(row.min || row.Min || 5),
+      max: parseInt(row.max || row.Max || 100),
+      notas: row.notas || row.Notas || ''
+    })).filter(p => p.nombre); // Filtrar vacíos
+
+    if(!productos.length) { toast('⚠ Sin productos válidos'); return; }
+
+    // Agregar a almacén
+    almacen = [...almacen, ...productos];
+    sv();
+    await syncAlmacenToSupabase();
+    renderA();
+    badges();
+
+    toast(`✅ Importados ${productos.length} productos`);
+    console.log('✅ Excel importado:', productos.length);
+    document.getElementById('excel-import').value = '';
+  } catch(e){
+    toast('❌ Error al importar Excel');
+    console.error(e);
+  }
+}
+</script>
 
 </body>
 </html>
