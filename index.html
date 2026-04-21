@@ -337,7 +337,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="ni" onclick="goPage('almacen',this)"><span class="ni-ico">▦</span>Almacén<span class="ni-badge" id="nb-a">0</span></div>
     <div class="ni" onclick="goPage('clientes',this)"><span class="ni-ico">◉</span>Clientes<span class="ni-badge" id="nb-c">0</span></div>
     <div class="nav-sec">Documentos</div>
-    <div class="ni" onclick="goPage('facturas',this)"><span class="ni-ico">📄</span>Facturas</div>
+    <div class="ni" onclick="goPage('facturas',this)"><span class="ni-ico">📄</span>Notas</div>
     <div class="nav-sec" id="nav-admin" style="display:none">Admin</div>
     <div class="ni" id="ni-users" onclick="openUsersModal()"><span class="ni-ico">👤</span>Crear Usuario</div>
     <div class="nav-sec">Exportación</div>
@@ -513,7 +513,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
         <button class="btn btn-teal btn-sm" onclick="openCfgModal()">⚙ Config</button>
       </div>
       <div class="f-grid" id="f-g"></div>
-      <div class="empty" id="f-empty" style="display:none"><div class="ei">📄</div><div class="et">Sin Facturas</div><div class="es">Las facturas se generan de ventas con "Con Factura".</div></div>
+      <div class="empty" id="f-empty" style="display:none"><div class="ei">📄</div><div class="et">Sin Notas</div><div class="es">Las facturas se generan de ventas con "Con Factura".</div></div>
     </div>
 
     <!-- ══ COMPAC ══ -->
@@ -826,7 +826,7 @@ function rDash(){
     {k:'kg',lbl:'Utilidad Neta',    val:fmt(tu),    sub:'Margen '+mg+'%'},
     {k:'kn',lbl:'Costo Acumulado',  val:fmt(tc),    sub:'costo de ventas'},
     {k:'',  lbl:'Clientes',         val:clientes.length, sub:'registrados'},
-    {k:'kr',lbl:'Facturas Vencidas',val:venc,       sub:'activas'},
+    {k:'kr',lbl:'Notas Vencidas',val:venc,       sub:'activas'},
     {k:'',  lbl:'Productos',        val:almacen.length,  sub:'en almacén'},
     {k:'ka',lbl:'Stock Bajo',       val:sl,         sub:'en alerta'},
   ];
@@ -1268,7 +1268,7 @@ function openCfgModal(){const f=(id,v)=>{const e=document.getElementById(id);if(
 function renderF(){const q=(document.getElementById('f-s')?.value||'').toLowerCase();const est=document.getElementById('f-estado')?.value||'';const data=ventas.filter(v=>{if(v.factura!=='con')return false;if(q&&!`${v.cliente}`.toLowerCase().includes(q))return false;if(est&&v.cobro!==est)return false;return true}).sort((a,b)=>new Date(b.fechaFactura||b.fecha)-new Date(a.fechaFactura||a.fecha));document.getElementById('f-empty').style.display=!ventas.some(v=>v.factura==='con')?'flex':'none';document.getElementById('f-g').innerHTML=data.length===0&&ventas.some(v=>v.factura==='con')?`<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted2)">Sin resultados</div>`:data.map(v=>{const est=v.cobro==='cobrado'?'pagada':'pendiente';const col=est==='pagada'?'var(--grn)':'var(--red)';return`<div class="f-card"><div class="fc-hd"><div class="fc-num">#${String(v.id).slice(-6)}</div><span class="badge" style="color:${col};background:${est==='pagada'?'rgba(25,135,84,.1)':'rgba(220,53,69,.1)'};border:1px solid ${est==='pagada'?'rgba(25,135,84,.2)':'rgba(220,53,69,.2)'};">${est}</span></div><div class="fc-info"><div class="fci"><span class="fcl">Cliente</span><span class="fcv">${v.cliente}</span></div><div class="fci"><span class="fcl">Fecha</span><span class="fcv">${v.fecha}</span></div></div><div class="fc-amt">${fmt(v.total)}</div><div class="fc-acts"><button class="btn btn-ghost btn-xs" onclick="viewFactura(${v.id})">Ver</button><button class="btn btn-primary btn-xs" onclick="printFactura(${v.id})">Imprimir</button></div></div>`}).join('')}
 function viewFactura(id){const v=ventas.find(x=>x.id===id);if(!v)return;const html=`<html><head><style>body{font-family:Arial;padding:20px;background:#f5f5f5}.fac{background:white;padding:40px;margin:0 auto;max-width:900px;box-shadow:0 0 20px rgba(0,0,0,0.1)}h1{color:#1E4F7A;margin:0}p{color:#666;font-size:12px;margin:2px 0}.hd{display:flex;justify-content:space-between;border-bottom:3px solid #1E4F7A;padding-bottom:20px;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin:20px 0}th{background:#1E4F7A;color:white;padding:10px;text-align:left}td{padding:8px;border-bottom:1px solid #ddd}.tot{text-align:right;font-size:18px;font-weight:bold;color:#1E4F7A;margin-top:20px}@media print{body{background:white}.fac{box-shadow:none;padding:0}}</style></head><body><div class="fac"><div class="hd"><div><h1>${cfg.nombre}</h1><p>RFC: ${cfg.rfc}</p><p>${cfg.tel} | ${cfg.email}</p><p>${cfg.dir}</p></div><div style="text-align:right"><h2>FACTURA</h2><p>#${String(v.id).slice(-6)}</p><p>Fecha: ${v.fecha}</p></div></div><div><h3>Cliente</h3><p><strong>${v.cliente}</strong></p></div><table><tr><th>Concepto</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr><tr><td>Venta</td><td>${v.cantidad}</td><td>${fmt(v.total/v.cantidad)}</td><td>${fmt(v.total)}</td></tr></table><div class="tot">TOTAL: ${fmt(v.total)}</div><p style="margin-top:30px;color:#999;font-size:11px">Estado: ${v.cobro==='cobrado'?'PAGADA':'PENDIENTE'}</p></div></body></html>`;const w=window.open('','','width=900,height=1000');w.document.write(html);w.document.close()}
 function printFactura(id){viewFactura(id);setTimeout(()=>{window.print()},500)}
-if(document.getElementById('f-g')){document.getElementById('pgTitle').textContent='Facturas';renderF()}
+if(document.getElementById('f-g')){document.getElementById('pgTitle').textContent='Notas';renderF()}
 
 // Restaurar sesión si existe y es válida
 const savedSession = localStorage.getItem('sesionActual');
