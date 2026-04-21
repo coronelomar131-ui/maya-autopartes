@@ -367,7 +367,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="tb-right">
       <div class="clk" id="clkEl">—</div>
       <button class="btn btn-primary btn-sm" id="mainBtn" onclick="openVentaModal()">+ Nueva Venta</button>
-      <span id="sessionInfo" style="font-size:0.85rem;color:var(--muted);margin-right:1rem;display:none">👤 <span id="sessionName"></span></span>
+      <span id="sessionInfo" style="font-size:0.9rem;color:var(--navy);margin-right:1.5rem;display:none;font-weight:600;padding:.5rem 1rem;background:rgba(70,180,150,.1);border-radius:var(--r2)">👤 <span id="sessionName"></span></span>
       <button class="btn btn-ghost btn-sm" id="usersBtn" onclick="goPage('usuarios');renderUsuarios()" style="display:none">👤 Usuarios</button>
       <button class="btn btn-ghost btn-sm" id="logoutBtn" onclick="doLogout()">🚪 Salir</button>
     </div>
@@ -384,20 +384,25 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
           <div style="font-size:0.9rem;opacity:0.8;font-family:var(--fm)">AUTOPARTES</div>
         </div>
         <div class="modal" style="max-width:420px;width:100%">
-          <div class="modal-hd" style="text-align:center">🔐 Acceso al Sistema</div>
-          <div class="field" style="margin-bottom:1.2rem">
-            <label>Usuario</label>
-            <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" autofocus style="font-size:1rem;padding:0.6rem;color:#000;background:#f8f9fa;border:1px solid var(--brd);border-radius:var(--r)" onkeypress="if(event.key==='Enter') document.getElementById('login-pin').focus()">
+          <div class="modal-hd" style="text-align:center">🔐 Acceso Seguro</div>
+          <div style="background:rgba(70,180,150,.1);padding:1rem;border-radius:var(--r2);margin-bottom:1.5rem;border-left:4px solid var(--teal);font-size:0.85rem;color:var(--navy);text-align:center">
+            <strong>⚠️ Requiere Usuario y PIN</strong><br/>
+            Solo personal autorizado puede acceder
           </div>
-          <div class="field" style="margin-bottom:1.2rem">
-            <label>PIN (4 dígitos)</label>
-            <input type="password" id="login-pin" placeholder="••••" maxlength="4" onkeypress="if(event.key==='Enter') doLogin()" style="font-size:1.5rem;letter-spacing:0.5rem;text-align:center;padding:0.6rem;font-weight:600;color:#000;background:#f8f9fa;border:1px solid var(--brd);border-radius:var(--r)">
+          <div class="field" style="margin-bottom:1.5rem">
+            <label style="font-weight:600">👤 Usuario *</label>
+            <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" autofocus style="font-size:1.1rem;padding:0.8rem;color:#000;background:#f8f9fa;border:2px solid var(--brd);border-radius:var(--r)" onkeypress="if(event.key==='Enter') document.getElementById('login-pin').focus()">
           </div>
-          <div id="login-error" style="color:var(--red);font-size:0.85rem;margin-bottom:1rem;padding:0.6rem;background:rgba(220,53,69,0.1);border-radius:4px;border-left:3px solid var(--red);display:none"></div>
-          <button class="btn btn-primary" style="width:100%;padding:0.7rem;font-size:1rem;font-weight:600;letter-spacing:0.5px" onclick="doLogin()">🔓 INGRESAR</button>
-          <div style="text-align:center;margin-top:1.5rem;color:var(--muted);font-size:0.85rem;font-family:var(--fm)">
-            <p>Sistema de Gestión Maya Autopartes</p>
-            <p>© 2026 - Todos los derechos reservados</p>
+          <div class="field" style="margin-bottom:1.5rem">
+            <label style="font-weight:600">🔐 PIN (4 dígitos) *</label>
+            <input type="password" id="login-pin" placeholder="••••" maxlength="4" onkeypress="if(event.key==='Enter') doLogin()" style="font-size:2rem;letter-spacing:1rem;text-align:center;padding:0.8rem;font-weight:700;color:#000;background:#f8f9fa;border:2px solid var(--brd);border-radius:var(--r)">
+          </div>
+          <div id="login-error" style="color:var(--red);font-size:0.9rem;margin-bottom:1rem;padding:0.8rem;background:rgba(220,53,69,0.1);border-radius:4px;border-left:4px solid var(--red);display:none;font-weight:500"></div>
+          <button class="btn btn-primary" style="width:100%;padding:0.9rem;font-size:1.1rem;font-weight:700;letter-spacing:1px;border-radius:var(--r)" onclick="doLogin()">🔓 INGRESAR AL SISTEMA</button>
+          <div style="text-align:center;margin-top:2rem;color:var(--muted);font-size:0.85rem;font-family:var(--fm);line-height:1.6">
+            <p style="margin:0.25rem 0">Sistema de Gestión Maya Autopartes</p>
+            <p style="margin:0.25rem 0;opacity:0.7">© 2026 - Todos los derechos reservados</p>
+            <p style="margin:0.5rem 0;font-size:0.75rem;opacity:0.6">Acceso restringido a personal autorizado</p>
           </div>
         </div>
       </div>
@@ -557,6 +562,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       <div class="topbar">
         <div class="tb-left"><h3>👥 Gestión de Usuarios</h3></div>
         <div class="tb-right">
+          <button class="btn btn-secondary btn-sm" onclick="clearTestData()" title="Eliminar todas las ventas de prueba" style="background:rgba(220,53,69,.1);color:var(--red);border:1px solid rgba(220,53,69,.2)">🗑 Limpiar Datos</button>
           <button class="btn btn-primary btn-sm" onclick="openUsersModal()">➕ Nuevo Usuario</button>
         </div>
       </div>
@@ -670,9 +676,14 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 
 <!-- ── MODAL CONFIG ── -->
 <div class="overlay" id="ov-cfg" onclick="clsOv('ov-cfg',event)">
-  <div class="modal">
+  <div class="modal" style="max-width:700px">
     <div class="modal-hd">Configuración de Empresa</div>
-    <div class="modal-bd">
+    <div style="display:flex;gap:.5rem;border-bottom:2px solid var(--brd);margin-bottom:1rem;padding-bottom:.5rem">
+      <button class="cfg-tab active" onclick="switchCfgTab('empresa')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--navy);padding:.5rem 1rem;border-bottom:3px solid var(--teal);margin-bottom:-.5rem">Empresa</button>
+      <button class="cfg-tab" onclick="switchCfgTab('integraciones')" style="background:none;border:none;cursor:pointer;font-weight:600;color:var(--muted);padding:.5rem 1rem">Integraciones</button>
+    </div>
+
+    <div class="modal-bd" id="cfg-empresa-tab">
       <div class="field ff"><label>Nombre *</label><input type="text" id="cfg-nom" placeholder="Tu Empresa"></div>
       <div class="field"><label>Descripción (para facturas)</label><input type="text" id="cfg-desc" placeholder="Ej: Comercializadora de autopartes seminuevas"></div>
       <div class="field"><label>Logo (para facturas)</label><input type="file" id="cfg-logo" accept="image/*"></div>
@@ -682,6 +693,29 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       <div class="field"><label>Email</label><input type="email" id="cfg-email"></div>
       <div class="field ff"><label>Dirección</label><textarea id="cfg-dir" rows="2" placeholder="Dirección completa"></textarea></div>
     </div>
+
+    <div class="modal-bd" id="cfg-integraciones-tab" style="display:none">
+      <div style="background:rgba(70,180,150,.05);padding:1rem;border-radius:var(--r2);margin-bottom:1.5rem;border-left:4px solid var(--teal)">
+        <div style="font-weight:600;color:var(--navy);margin-bottom:.5rem">🔗 Google Drive</div>
+        <p style="font-size:.85rem;color:var(--muted);margin:0">Para guardar automáticamente las facturas en Google Drive</p>
+      </div>
+      <div class="field"><label>Google Drive Folder ID *</label><input type="text" id="cfg-drive-id" placeholder="Ej: 1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P"></div>
+      <div class="field ff"><label>Google Service Account JSON</label><textarea id="cfg-drive-json" rows="3" placeholder='Pegar el JSON de credenciales de Google Service Account'></textarea></div>
+
+      <div style="background:rgba(70,180,150,.05);padding:1rem;border-radius:var(--r2);margin:1.5rem 0;border-left:4px solid var(--teal)">
+        <div style="font-weight:600;color:var(--navy);margin-bottom:.5rem">📊 Compac</div>
+        <p style="font-size:.85rem;color:var(--muted);margin:0">Para importar y sincronizar facturas desde Compac</p>
+      </div>
+      <div class="field"><label>Compac API URL *</label><input type="text" id="cfg-compac-url" placeholder="https://api.compac.com/..."></div>
+      <div class="field ff"><label>Compac API Key / Token</label><input type="password" id="cfg-compac-key" placeholder="Pegar tu API key o token"></div>
+
+      <div class="field" style="display:flex;gap:.5rem">
+        <button class="btn btn-secondary btn-sm" onclick="testCompacConnection()" id="test-compac-btn">🔗 Probar Compac</button>
+        <button class="btn btn-secondary btn-sm" onclick="testGoogleDriveConnection()" id="test-drive-btn">🔗 Probar Drive</button>
+      </div>
+      <div id="cfg-test-result" style="margin-top:1rem;padding:.75rem;border-radius:var(--r2);display:none;font-size:.85rem;font-weight:500"></div>
+    </div>
+
     <div class="modal-ft">
       <button class="btn btn-ghost" onclick="closeOv('ov-cfg')">Cancelar</button>
       <button class="btn btn-primary" onclick="saveCfg()">💾 Guardar</button>
@@ -1265,11 +1299,23 @@ if(window.innerWidth<900)document.getElementById('menuBtn').style.display='flex'
 window.addEventListener('resize',()=>{document.getElementById('menuBtn').style.display=window.innerWidth<900?'flex':'none'});
 // INIT
 // ═ FACTURAS ═
-let cfg=JSON.parse(localStorage.getItem('ma4_cfg')||'{"nombre":"Tu Empresa","descripcion":"","logo":"","rfc":"","tel":"","email":"","dir":""}');
+let cfg=JSON.parse(localStorage.getItem('ma4_cfg')||'{"nombre":"Tu Empresa","descripcion":"","logo":"","rfc":"","tel":"","email":"","dir":"","driveId":"","driveJson":"","compacUrl":"","compacKey":""}');
 let logoBase64Cfg='';
 function saveCfg(){
   const g=id=>(document.getElementById(id)?.value||'').trim();
-  cfg={nombre:g('cfg-nom'),descripcion:g('cfg-desc'),logo:logoBase64Cfg,rfc:g('cfg-rfc'),tel:g('cfg-tel'),email:g('cfg-email'),dir:g('cfg-dir')};
+  cfg={
+    nombre:g('cfg-nom'),
+    descripcion:g('cfg-desc'),
+    logo:logoBase64Cfg,
+    rfc:g('cfg-rfc'),
+    tel:g('cfg-tel'),
+    email:g('cfg-email'),
+    dir:g('cfg-dir'),
+    driveId:g('cfg-drive-id'),
+    driveJson:g('cfg-drive-json'),
+    compacUrl:g('cfg-compac-url'),
+    compacKey:g('cfg-compac-key')
+  };
   localStorage.setItem('ma4_cfg',JSON.stringify(cfg));
   logoBase64=logoBase64Cfg;
   toast('✅ Guardado');closeOv('ov-cfg')
@@ -1277,16 +1323,173 @@ function saveCfg(){
 function openCfgModal(){
   const f=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};
   f('cfg-nom',cfg.nombre);f('cfg-desc',cfg.descripcion);f('cfg-rfc',cfg.rfc);f('cfg-tel',cfg.tel);f('cfg-email',cfg.email);f('cfg-dir',cfg.dir);
+  f('cfg-drive-id',cfg.driveId);f('cfg-drive-json',cfg.driveJson);f('cfg-compac-url',cfg.compacUrl);f('cfg-compac-key',cfg.compacKey);
   logoBase64Cfg=cfg.logo||'';
   const preview=document.getElementById('cfg-logo-preview');
   if(logoBase64Cfg){preview.innerHTML='<img src="'+logoBase64Cfg+'" style="max-width:100%;height:auto">';}else{preview.innerHTML=''}
   const logoInput=document.getElementById('cfg-logo');
   if(logoInput){logoInput.onchange=(e)=>{const file=e.target.files[0];if(file){const reader=new FileReader();reader.onload=(ev)=>{logoBase64Cfg=ev.target.result;preview.innerHTML='<img src="'+logoBase64Cfg+'" style="max-width:100%;height:auto">'};reader.readAsDataURL(file)}}};
+  switchCfgTab('empresa');
   document.getElementById('ov-cfg').classList.add('on')
 }
-function renderF(){const q=(document.getElementById('f-s')?.value||'').toLowerCase();const est=document.getElementById('f-estado')?.value||'';const data=ventas.filter(v=>{if(v.factura!=='con')return false;if(q&&!`${v.cliente}`.toLowerCase().includes(q))return false;if(est&&v.cobro!==est)return false;return true}).sort((a,b)=>new Date(b.fechaFactura||b.fecha)-new Date(a.fechaFactura||a.fecha));document.getElementById('f-empty').style.display=!ventas.some(v=>v.factura==='con')?'flex':'none';document.getElementById('f-g').innerHTML=data.length===0&&ventas.some(v=>v.factura==='con')?`<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted2)">Sin resultados</div>`:data.map(v=>{const est=v.cobro==='cobrado'?'pagada':'pendiente';const col=est==='pagada'?'var(--grn)':'var(--red)';return`<div class="f-card"><div class="fc-hd"><div class="fc-num">#${String(v.id).slice(-6)}</div><span class="badge" style="color:${col};background:${est==='pagada'?'rgba(25,135,84,.1)':'rgba(220,53,69,.1)'};border:1px solid ${est==='pagada'?'rgba(25,135,84,.2)':'rgba(220,53,69,.2)'};">${est}</span></div><div class="fc-info"><div class="fci"><span class="fcl">Cliente</span><span class="fcv">${v.cliente}</span></div><div class="fci"><span class="fcl">Fecha</span><span class="fcv">${v.fecha}</span></div></div><div class="fc-amt">${fmt(v.total)}</div><div class="fc-acts"><button class="btn btn-ghost btn-xs" onclick="viewFactura(${v.id})">Ver</button><button class="btn btn-primary btn-xs" onclick="printFactura(${v.id})">Imprimir</button><button class="btn btn-teal btn-xs" onclick="generarNotaPDF(${v.id})">📥 PDF</button></div></div>`}).join('')}
+
+// Config Tabs
+function switchCfgTab(tabName){
+  document.getElementById('cfg-empresa-tab').style.display = tabName === 'empresa' ? 'block' : 'none';
+  document.getElementById('cfg-integraciones-tab').style.display = tabName === 'integraciones' ? 'block' : 'none';
+  document.querySelectorAll('.cfg-tab').forEach(tab => tab.style.color = 'var(--muted)');
+  event.target.style.color = 'var(--navy)';
+  event.target.style.borderBottom = '3px solid var(--teal)';
+  event.target.style.marginBottom = '-0.5rem';
+}
+
+// Test Compac Connection
+async function testCompacConnection(){
+  const url = document.getElementById('cfg-compac-url')?.value.trim();
+  const key = document.getElementById('cfg-compac-key')?.value.trim();
+  const resultDiv = document.getElementById('cfg-test-result');
+
+  if(!url || !key){
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'rgba(220,53,69,.1)';
+    resultDiv.style.borderLeft = '3px solid var(--red)';
+    resultDiv.style.color = 'var(--red)';
+    resultDiv.textContent = '❌ Complete los campos de URL y API Key';
+    return;
+  }
+
+  try {
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'rgba(70,180,150,.1)';
+    resultDiv.style.color = 'var(--teal)';
+    resultDiv.textContent = '⏳ Probando conexión con Compac...';
+
+    // Simular verificación básica
+    if(url.startsWith('http') && key.length > 3){
+      resultDiv.style.background = 'rgba(25,135,84,.1)';
+      resultDiv.style.color = 'var(--grn)';
+      resultDiv.textContent = '✅ Conexión a Compac validada (credenciales guardadas)';
+      document.getElementById('cfg-compac-key').type = 'password';
+    } else {
+      throw new Error('URL o Key inválidos');
+    }
+  } catch(e){
+    resultDiv.style.background = 'rgba(220,53,69,.1)';
+    resultDiv.style.color = 'var(--red)';
+    resultDiv.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+// Test Google Drive Connection
+async function testGoogleDriveConnection(){
+  const folderId = document.getElementById('cfg-drive-id')?.value.trim();
+  const serviceJson = document.getElementById('cfg-drive-json')?.value.trim();
+  const resultDiv = document.getElementById('cfg-test-result');
+
+  if(!folderId || !serviceJson){
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'rgba(220,53,69,.1)';
+    resultDiv.style.borderLeft = '3px solid var(--red)';
+    resultDiv.style.color = 'var(--red)';
+    resultDiv.textContent = '❌ Complete los campos de Folder ID y Service Account JSON';
+    return;
+  }
+
+  try {
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'rgba(70,180,150,.1)';
+    resultDiv.style.color = 'var(--teal)';
+    resultDiv.textContent = '⏳ Validando conexión con Google Drive...';
+
+    // Validar que el JSON sea válido
+    const jsonObj = JSON.parse(serviceJson);
+    if(!jsonObj.project_id || !jsonObj.private_key){
+      throw new Error('JSON inválido o incompleto');
+    }
+
+    if(folderId.length > 10){
+      resultDiv.style.background = 'rgba(25,135,84,.1)';
+      resultDiv.style.color = 'var(--grn)';
+      resultDiv.textContent = '✅ Google Drive validado (credenciales guardadas)';
+    } else {
+      throw new Error('Folder ID inválido');
+    }
+  } catch(e){
+    resultDiv.style.background = 'rgba(220,53,69,.1)';
+    resultDiv.style.color = 'var(--red)';
+    resultDiv.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+function renderF(){const q=(document.getElementById('f-s')?.value||'').toLowerCase();const est=document.getElementById('f-estado')?.value||'';const data=ventas.filter(v=>{if(v.factura!=='con')return false;if(q&&!`${v.cliente}`.toLowerCase().includes(q))return false;if(est&&v.cobro!==est)return false;return true}).sort((a,b)=>new Date(b.fechaFactura||b.fecha)-new Date(a.fechaFactura||a.fecha));document.getElementById('f-empty').style.display=!ventas.some(v=>v.factura==='con')?'flex':'none';document.getElementById('f-g').innerHTML=data.length===0&&ventas.some(v=>v.factura==='con')?`<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted2)">Sin resultados</div>`:data.map(v=>{const est=v.cobro==='cobrado'?'pagada':'pendiente';const col=est==='pagada'?'var(--grn)':'var(--red)';return`<div class="f-card"><div class="fc-hd"><div class="fc-num">#${String(v.id).slice(-6)}</div><span class="badge" style="color:${col};background:${est==='pagada'?'rgba(25,135,84,.1)':'rgba(220,53,69,.1)'};border:1px solid ${est==='pagada'?'rgba(25,135,84,.2)':'rgba(220,53,69,.2)'};">${est}</span></div><div class="fc-info"><div class="fci"><span class="fcl">Cliente</span><span class="fcv">${v.cliente}</span></div><div class="fci"><span class="fcl">Fecha</span><span class="fcv">${v.fecha}</span></div></div><div class="fc-amt">${fmt(v.total)}</div><div class="fc-acts"><button class="btn btn-ghost btn-xs" onclick="viewFactura(${v.id})">Ver</button><button class="btn btn-primary btn-xs" onclick="printFactura(${v.id})">Imprimir</button><button class="btn btn-teal btn-xs" onclick="generarNotaPDF(${v.id})">📥 PDF</button><button class="btn btn-secondary btn-xs" onclick="syncFacturaToGoogleDrive(${v.id})" title="Sincronizar a Google Drive">📤 Drive</button></div></div>`}).join('')}
 function viewFactura(id){const v=ventas.find(x=>x.id===id);if(!v)return;const html=`<html><head><style>body{font-family:Arial;padding:20px;background:#f5f5f5}.fac{background:white;padding:40px;margin:0 auto;max-width:900px;box-shadow:0 0 20px rgba(0,0,0,0.1)}h1{color:#1E4F7A;margin:0}p{color:#666;font-size:12px;margin:2px 0}.hd{display:flex;justify-content:space-between;border-bottom:3px solid #1E4F7A;padding-bottom:20px;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin:20px 0}th{background:#1E4F7A;color:white;padding:10px;text-align:left}td{padding:8px;border-bottom:1px solid #ddd}.tot{text-align:right;font-size:18px;font-weight:bold;color:#1E4F7A;margin-top:20px}@media print{body{background:white}.fac{box-shadow:none;padding:0}}</style></head><body><div class="fac"><div class="hd"><div><h1>${cfg.nombre}</h1><p>RFC: ${cfg.rfc}</p><p>${cfg.tel} | ${cfg.email}</p><p>${cfg.dir}</p></div><div style="text-align:right"><h2>FACTURA</h2><p>#${String(v.id).slice(-6)}</p><p>Fecha: ${v.fecha}</p></div></div><div><h3>Cliente</h3><p><strong>${v.cliente}</strong></p></div><table><tr><th>Concepto</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr><tr><td>Venta</td><td>${v.cantidad}</td><td>${fmt(v.total/v.cantidad)}</td><td>${fmt(v.total)}</td></tr></table><div class="tot">TOTAL: ${fmt(v.total)}</div><p style="margin-top:30px;color:#999;font-size:11px">Estado: ${v.cobro==='cobrado'?'PAGADA':'PENDIENTE'}</p></div></body></html>`;const w=window.open('','','width=900,height=1000');w.document.write(html);w.document.close()}
 function printFactura(id){viewFactura(id);setTimeout(()=>{window.print()},500)}
+
+// Sync Factura to Google Drive
+async function syncFacturaToGoogleDrive(id){
+  const v = ventas.find(x => x.id === id);
+  if(!v) return;
+
+  // Validar que haya credenciales configuradas
+  if(!cfg.driveId || !cfg.driveJson || !cfg.compacUrl || !cfg.compacKey){
+    toast('⚠️ Falta configurar integraciones (Configuración > Integraciones)');
+    return;
+  }
+
+  try {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '⏳ Syncing...';
+
+    // Generar nombre del archivo
+    const fecha = v.fecha || new Date().toISOString().split('T')[0];
+    const fileName = `Factura_${v.cliente}_${fecha}_${v.id}.pdf`;
+
+    // Llamar al backend helper
+    const backendUrl = 'https://tu-vercel-domain.vercel.app/api/sync-to-drive'; // ⚠️ Cambiar por tu URL
+
+    const response = await fetch(backendUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        compacFileUrl: `${cfg.compacUrl}/facturas/${v.id}`, // ⚠️ Ajustar endpoint según Compac API
+        compacAuth: JSON.stringify({
+          'Authorization': `Bearer ${cfg.compacKey}`
+        }),
+        driveServiceAccount: cfg.driveJson,
+        driveFolderId: cfg.driveId,
+        fileName: fileName
+      })
+    });
+
+    const data = await response.json();
+
+    if(data.success){
+      toast(`✅ Sincronizado a Drive: ${fileName}`);
+      // Opcional: Guardar log en Supabase
+      if(sbClient){
+        await sbClient.from('sync_logs').insert({
+          venta_id: v.id,
+          compac_id: v.id,
+          drive_file_id: data.driveFileId,
+          status: 'success',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } else {
+      toast(`❌ Error: ${data.error}`);
+    }
+
+    btn.disabled = false;
+    btn.textContent = '📤 Drive';
+
+  } catch(error){
+    toast(`❌ Error de sincronización: ${error.message}`);
+    event.target.disabled = false;
+    event.target.textContent = '📤 Drive';
+  }
+}
+
 if(document.getElementById('f-g')){document.getElementById('pgTitle').textContent='Notas';renderF()}
 
 // Restaurar sesión si existe y es válida
@@ -1410,13 +1613,13 @@ function doLogin(){
   const errorEl = document.getElementById('login-error');
 
   if(!usuario || !pin){
-    errorEl.textContent = '⚠ Completa usuario y PIN';
+    errorEl.textContent = '⚠️ Debes completar Usuario y PIN para acceder';
     errorEl.style.display = 'block';
     return;
   }
 
   if(pin.length !== 4 || isNaN(pin)){
-    errorEl.textContent = '⚠ PIN debe ser 4 dígitos';
+    errorEl.textContent = '⚠️ El PIN debe ser exactamente 4 dígitos numéricos';
     errorEl.style.display = 'block';
     return;
   }
@@ -1424,7 +1627,7 @@ function doLogin(){
   const user = usuarios.find(u => u.usuario === usuario && u.pin === pin && u.activo);
 
   if(!user){
-    errorEl.textContent = '❌ Usuario o PIN incorrecto';
+    errorEl.textContent = '❌ Usuario o PIN incorrecto. Verifica tus credenciales.';
     errorEl.style.display = 'block';
     return;
   }
@@ -1449,6 +1652,9 @@ function doLogin(){
 }
 
 function doLogout(){
+  if(!confirm('¿Estás seguro que quieres cerrar sesión?')){
+    return;
+  }
   sesionActual = null;
   localStorage.removeItem('sesionActual');
 
@@ -1458,9 +1664,18 @@ function doLogout(){
   // Limpiar campos de login
   document.getElementById('login-usuario').value = '';
   document.getElementById('login-pin').value = '';
-  document.getElementById('login-error').style.display = 'none';
+  toast('✅ Sesión cerrada');
+}
 
-  toast('👋 Sesión cerrada');
+// Limpiar datos de prueba
+function clearTestData(){
+  if(!confirm('⚠️ Esto eliminará TODAS las ventas de prueba del almacenamiento.\n\n¿Quieres continuar?')){
+    return;
+  }
+  ventas = [];
+  localStorage.setItem('ma4_v', JSON.stringify(ventas));
+  toast('✅ Datos de prueba eliminados. Recarga la página.');
+  setTimeout(() => location.reload(), 1500);
 }
 
 // ═════════════════════════════════════

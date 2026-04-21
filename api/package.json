@@ -1,0 +1,17 @@
+{
+  "name": "maya-autopartes-sync",
+  "version": "1.0.0",
+  "description": "Sync Compac files to Google Drive",
+  "main": "sync-to-drive.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel"
+  },
+  "dependencies": {
+    "googleapis": "^118.0.0",
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "vercel": "^34.0.0"
+  }
+}
