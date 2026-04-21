@@ -1627,6 +1627,15 @@ function loadExcelFacturas(){
         throw new Error('El Excel está vacío o no tiene datos');
       }
 
+      // Primero, detectar qué vendedores hay en el Excel
+      const vendedoresUnicos = new Set();
+      rows.forEach(row => {
+        const v = (row.VENDEDOR || '').trim();
+        if(v) vendedoresUnicos.add(v);
+      });
+
+      console.log('🔍 Vendedores encontrados en Excel:', Array.from(vendedoresUnicos));
+
       // Agrupar por vendedor
       const facturasPorVendedor = {
         'Estefanya': [],
@@ -1670,10 +1679,23 @@ function loadExcelFacturas(){
           vendedor: vendedor
         };
 
-        // Clasificar flexible
-        if(vendedorLower.includes('estefan') || vendedorLower.includes('estefañ')){
+        // Clasificar MÁS flexible - buscar cualquier parecido
+        if(
+          vendedor === 'Estefanya' ||
+          vendedor === 'ESTEFANYA' ||
+          vendedorLower.includes('estefan') ||
+          vendedorLower.includes('estefañ') ||
+          vendedor === 'Estéfanya'
+        ){
           facturasPorVendedor['Estefanya'].push(factura);
-        } else if(vendedorLower.includes('josue') || vendedorLower.includes('josu') || vendedorLower.includes('josé')){
+        } else if(
+          vendedor === 'Josué' ||
+          vendedor === 'JOSUÉ' ||
+          vendedor === 'Josue' ||
+          vendedorLower.includes('josue') ||
+          vendedorLower.includes('josu') ||
+          vendedorLower.includes('josé')
+        ){
           facturasPorVendedor['Josué'].push(factura);
         } else {
           facturasPorVendedor['Otros'].push(factura);
