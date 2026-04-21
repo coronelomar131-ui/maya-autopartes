@@ -562,7 +562,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       <div class="topbar">
         <div class="tb-left"><h3>👥 Gestión de Usuarios</h3></div>
         <div class="tb-right">
-          <button class="btn btn-secondary btn-sm" onclick="clearTestData()" title="Eliminar todas las ventas de prueba" style="background:rgba(220,53,69,.1);color:var(--red);border:1px solid rgba(220,53,69,.2)">🗑 Limpiar Datos</button>
+          <button class="btn btn-secondary btn-sm" onclick="clearTestData()" title="Borra TODO: ventas, clientes, usuarios, notas" style="background:rgba(220,53,69,.15);color:var(--red);border:2px solid var(--red);font-weight:600">🗑️ Borrar TODO</button>
           <button class="btn btn-primary btn-sm" onclick="openUsersModal()">➕ Nuevo Usuario</button>
         </div>
       </div>
@@ -1687,12 +1687,18 @@ function doLogout(){
 
 // Limpiar datos de prueba
 function clearTestData(){
-  if(!confirm('⚠️ Esto eliminará TODAS las ventas de prueba del almacenamiento.\n\n¿Quieres continuar?')){
+  if(!confirm('⚠️ ¡ATENCIÓN! Esto eliminará TODO:\n\n- ❌ Todas las ventas\n- ❌ Todas las notas/facturas\n- ❌ Todos los clientes\n- ❌ Todos los usuarios\n\nLa app quedará COMPLETAMENTE VACÍA.\n\n¿Quieres continuar?')){
     return;
   }
+  // Limpiar TODO del localStorage
   ventas = [];
-  localStorage.setItem('ma4_v', JSON.stringify(ventas));
-  toast('✅ Datos de prueba eliminados. Recarga la página.');
+  clientes = [];
+  usuarios = [];
+  localStorage.setItem('ma4_v', JSON.stringify([]));
+  localStorage.setItem('ma4_c', JSON.stringify([]));
+  localStorage.setItem('ma4_u', JSON.stringify([]));
+  localStorage.removeItem('sesionActual');
+  toast('🧹 ¡TODO borrado! Recargando...');
   setTimeout(() => location.reload(), 1500);
 }
 
