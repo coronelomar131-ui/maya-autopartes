@@ -1541,13 +1541,55 @@ function deleteNota(id){
 
 // Renderizar "Mis Facturas" - dos columnas Estefanya y Josué
 // Cuando conectes el Excel, aquí se cargan los datos
-function renderMisFacturas(){
-  // LISTO PARA CONECTAR EXCEL
-  // Por ahora mostramos vacío esperando que cargues el Excel
-  document.getElementById('facturas-estefanya').innerHTML = '';
-  document.getElementById('empty-estefanya').style.display = 'block';
-  document.getElementById('facturas-josue').innerHTML = '';
-  document.getElementById('empty-josue').style.display = 'block';
+function renderMisFacturas(datos){
+  const estDiv = document.getElementById('facturas-estefanya');
+  const josDiv = document.getElementById('facturas-josue');
+  const emptyEst = document.getElementById('empty-estefanya');
+  const emptyJos = document.getElementById('empty-josue');
+
+  // Usar datos pasados o intentar obtener del localStorage
+  let facturas = datos || JSON.parse(localStorage.getItem('onedrive_facturas') || '{}');
+
+  const estFacturas = facturas['Estefanya'] || [];
+  const josFacturas = facturas['Josué'] || [];
+
+  // Limpiar HTML
+  estDiv.innerHTML = '';
+  josDiv.innerHTML = '';
+
+  // COLUMNA ESTEFANYA
+  if (estFacturas.length === 0) {
+    emptyEst.style.display = 'block';
+    estDiv.innerHTML = '';
+  } else {
+    emptyEst.style.display = 'none';
+    estDiv.innerHTML = estFacturas.map(f => `
+      <div class="factura-item" style="padding:0.75rem;border-left:3px solid var(--orange);margin-bottom:0.5rem;background:rgba(255,140,0,.05);border-radius:var(--r1)">
+        <div style="font-weight:600;color:var(--navy);margin-bottom:0.25rem">#${f.numero}</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.25rem">${f.cliente}</div>
+        <div style="font-size:0.9rem;font-weight:500;color:var(--orange)">$${parseFloat(f.total || 0).toFixed(2)}</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem">${f.fecha || ''}</div>
+        <div style="font-size:0.75rem;background:${f.estatus === 'Pagado' ? 'rgba(25,135,84,.2)' : 'rgba(220,53,69,.2)'};color:${f.estatus === 'Pagado' ? 'var(--grn)' : 'var(--red)'};padding:0.25rem 0.5rem;border-radius:2px;margin-top:0.25rem;display:inline-block">${f.estatus || 'Pendiente'}</div>
+      </div>
+    `).join('');
+  }
+
+  // COLUMNA JOSUÉ
+  if (josFacturas.length === 0) {
+    emptyJos.style.display = 'block';
+    josDiv.innerHTML = '';
+  } else {
+    emptyJos.style.display = 'none';
+    josDiv.innerHTML = josFacturas.map(f => `
+      <div class="factura-item" style="padding:0.75rem;border-left:3px solid var(--teal);margin-bottom:0.5rem;background:rgba(70,180,150,.05);border-radius:var(--r1)">
+        <div style="font-weight:600;color:var(--navy);margin-bottom:0.25rem">#${f.numero}</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.25rem">${f.cliente}</div>
+        <div style="font-size:0.9rem;font-weight:500;color:var(--teal)">$${parseFloat(f.total || 0).toFixed(2)}</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem">${f.fecha || ''}</div>
+        <div style="font-size:0.75rem;background:${f.estatus === 'Pagado' ? 'rgba(25,135,84,.2)' : 'rgba(220,53,69,.2)'};color:${f.estatus === 'Pagado' ? 'var(--grn)' : 'var(--red)'};padding:0.25rem 0.5rem;border-radius:2px;margin-top:0.25rem;display:inline-block">${f.estatus || 'Pendiente'}</div>
+      </div>
+    `).join('');
+  }
 }
 
 // Test OneDrive Connection
@@ -1591,23 +1633,47 @@ async function syncOneDrive(){
     btn.disabled = true;
     btn.textContent = '⏳ Sincronizando...';
     statusDiv.style.display = 'block';
+    statusDiv.style.background = 'rgba(70,180,150,.1)';
+    statusDiv.style.color = 'var(--teal)';
     statusDiv.textContent = '⏳ Leyendo Excel de OneDrive...';
 
-    // Simular sincronización (próximamente conectar Excel real)
-    setTimeout(() => {
-      statusDiv.textContent = '✅ Excel sincronizado. Mostrando facturas en las columnas...';
-      btn.disabled = false;
-      btn.textContent = '🔄 Sincronizar Ahora';
-      renderMisFacturas();
-      toast('✅ OneDrive sincronizado');
-    }, 2000);
+    // Llamar al backend para leer el Excel
+    const response = await fetch('/api/read-onedrive-excel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oneDriveLink: link })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.details || errData.error || 'Error desconocido');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al leer Excel');
+    }
+
+    // Guardar datos en localStorage para renderizar
+    localStorage.setItem('onedrive_facturas', JSON.stringify(result.facturas));
+
+    statusDiv.textContent = `✅ Excel sincronizado (${result.total} facturas). Mostrando en columnas...`;
+    btn.disabled = false;
+    btn.textContent = '🔄 Sincronizar Ahora';
+
+    // Renderizar con datos reales
+    renderMisFacturas(result.facturas);
+    toast(`✅ OneDrive sincronizado: ${result.total} facturas`);
 
   } catch(error){
+    console.error('Error sincronizando OneDrive:', error);
     statusDiv.style.background = 'rgba(220,53,69,.1)';
     statusDiv.style.color = 'var(--red)';
     statusDiv.textContent = '❌ Error: ' + error.message;
     btn.disabled = false;
     btn.textContent = '🔄 Sincronizar Ahora';
+    toast('❌ Error al sincronizar OneDrive');
   }
 }
 
