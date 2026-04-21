@@ -824,14 +824,6 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
           <option value="admin">Administrador</option>
         </select>
       </div>
-      <div class="field"><label>RFC (para filtrar facturas)</label>
-        <select id="uu-rfc">
-          <option value="">-- Selecciona RFC --</option>
-          <option value="JOSUE">Josué</option>
-          <option value="ESTEFANYA">Estefanya</option>
-          <option value="ADMIN">Admin (todas las facturas)</option>
-        </select>
-      </div>
     </div>
     <div class="modal-ft">
       <button class="btn btn-ghost" onclick="closeOv('ov-users')">Cancelar</button>
@@ -1766,11 +1758,22 @@ function saveNewUser(){
   const usuario = document.getElementById('uu-usuario')?.value?.trim();
   const pin = document.getElementById('uu-pin')?.value?.trim();
   const rol = document.getElementById('uu-rol')?.value || 'user';
-  const rfc = document.getElementById('uu-rfc')?.value?.trim() || '';
 
-  if(!nombre || !usuario || !pin || !rfc){
-    toast('⚠ Completa todos los campos (incluye RFC)');
+  if(!nombre || !usuario || !pin){
+    toast('⚠ Completa todos los campos');
     return;
+  }
+
+  // RFC automático según nombre
+  let rfc = '';
+  if(nombre.toLowerCase().includes('estefanya') || nombre.toLowerCase().includes('estefania')){
+    rfc = 'ESTEFANYA';
+  } else if(nombre.toLowerCase().includes('josué') || nombre.toLowerCase().includes('josue')){
+    rfc = 'JOSUE';
+  } else if(rol === 'admin'){
+    rfc = 'ADMIN';
+  } else {
+    rfc = 'USER';
   }
 
   if(pin.length !== 4 || isNaN(pin)){
@@ -1801,7 +1804,6 @@ function saveNewUser(){
   document.getElementById('uu-usuario').value = '';
   document.getElementById('uu-pin').value = '';
   document.getElementById('uu-rol').value = 'user';
-  document.getElementById('uu-rfc').value = '';
 
   closeOv('ov-users');
   toast('✅ Usuario creado: ' + usuario);
