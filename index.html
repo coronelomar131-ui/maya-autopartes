@@ -1524,62 +1524,14 @@ function deleteNota(id){
 }
 
 // Renderizar "Mis Facturas" - dos columnas Estefanya y Josué
+// Cuando conectes el Excel, aquí se cargan los datos
 function renderMisFacturas(){
-  // Facturas de Estefanya
-  const estefanya = ventas.filter(v => v.rfc === 'ESTEFANYA').sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-  const divEstefanya = document.getElementById('facturas-estefanya');
-  const emptyEstefanya = document.getElementById('empty-estefanya');
-
-  if(estefanya.length === 0){
-    divEstefanya.innerHTML = '';
-    emptyEstefanya.style.display = 'block';
-  } else {
-    emptyEstefanya.style.display = 'none';
-    divEstefanya.innerHTML = estefanya.map(v => {
-      const estado = v.cobro === 'cobrado' ? '✅' : '⏳';
-      return `
-        <div style="background:rgba(70,180,150,.05);padding:0.8rem;border-radius:var(--r);border-left:3px solid var(--teal);cursor:pointer;hover:background-color:rgba(70,180,150,.1)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem">
-            <div style="font-weight:600;color:var(--navy)">#${String(v.id).slice(-6)}</div>
-            <div style="font-size:0.8rem;color:var(--muted)">${v.fecha}</div>
-          </div>
-          <div style="color:var(--muted);font-size:0.85rem;margin-bottom:0.3rem">${v.cliente}</div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700;color:var(--teal);font-size:1.1rem">${fmt(v.total)}</div>
-            <div style="font-size:0.9rem">${estado}</div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // Facturas de Josué
-  const josue = ventas.filter(v => v.rfc === 'JOSUE').sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-  const divJosue = document.getElementById('facturas-josue');
-  const emptyJosue = document.getElementById('empty-josue');
-
-  if(josue.length === 0){
-    divJosue.innerHTML = '';
-    emptyJosue.style.display = 'block';
-  } else {
-    emptyJosue.style.display = 'none';
-    divJosue.innerHTML = josue.map(v => {
-      const estado = v.cobro === 'cobrado' ? '✅' : '⏳';
-      return `
-        <div style="background:rgba(255,152,0,.05);padding:0.8rem;border-radius:var(--r);border-left:3px solid var(--amb);cursor:pointer">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem">
-            <div style="font-weight:600;color:var(--navy)">#${String(v.id).slice(-6)}</div>
-            <div style="font-size:0.8rem;color:var(--muted)">${v.fecha}</div>
-          </div>
-          <div style="color:var(--muted);font-size:0.85rem;margin-bottom:0.3rem">${v.cliente}</div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700;color:var(--amb);font-size:1.1rem">${fmt(v.total)}</div>
-            <div style="font-size:0.9rem">${estado}</div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
+  // LISTO PARA CONECTAR EXCEL
+  // Por ahora mostramos vacío esperando que cargues el Excel
+  document.getElementById('facturas-estefanya').innerHTML = '';
+  document.getElementById('empty-estefanya').style.display = 'block';
+  document.getElementById('facturas-josue').innerHTML = '';
+  document.getElementById('empty-josue').style.display = 'block';
 }
 
 // Sincronizar facturas desde Google Drive
@@ -1764,18 +1716,6 @@ function saveNewUser(){
     return;
   }
 
-  // RFC automático según nombre
-  let rfc = '';
-  if(nombre.toLowerCase().includes('estefanya') || nombre.toLowerCase().includes('estefania')){
-    rfc = 'ESTEFANYA';
-  } else if(nombre.toLowerCase().includes('josué') || nombre.toLowerCase().includes('josue')){
-    rfc = 'JOSUE';
-  } else if(rol === 'admin'){
-    rfc = 'ADMIN';
-  } else {
-    rfc = 'USER';
-  }
-
   if(pin.length !== 4 || isNaN(pin)){
     toast('⚠ PIN debe ser 4 dígitos');
     return;
@@ -1792,7 +1732,6 @@ function saveNewUser(){
     usuario,
     pin,
     rol,
-    rfc,
     activo: true
   };
 
