@@ -718,6 +718,8 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 // DATA
 // ═════════════════════════════════════
 let ventas   = JSON.parse(localStorage.getItem('ma4_v')||'[]');
+// Limpiar ventas demo
+ventas = ventas.filter(v => v.cliente && v.cliente !== 'Demo' && v.cliente !== 'DEMO');
 let almacen  = JSON.parse(localStorage.getItem('ma4_a')||'[]');
 let clientes = JSON.parse(localStorage.getItem('ma4_c')||'[]');
 let usuarios = JSON.parse(localStorage.getItem('ma4_u')||'[]');
