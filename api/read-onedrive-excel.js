@@ -1,7 +1,7 @@
+import axios from 'axios';
 import XLSX from 'xlsx';
 
 export default async function handler(req, res) {
-  // Solo POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
@@ -13,9 +13,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Convertir link compartido a URL descargable
-    // link: https://1drv.ms/x/c/XXXXXX/YYYYYYY?e=ZZZZZZ
-    // Para OneDrive, reemplazar download= si existe
+    console.log('📥 Descargando desde OneDrive:', oneDriveLink.substring(0, 50) + '...');
+
+    // Agregar download=1 para forzar descarga
     let downloadUrl = oneDriveLink;
     if (oneDriveLink.includes('?')) {
       downloadUrl = oneDriveLink.replace('?', '?download=1&');
@@ -23,77 +23,25 @@ export default async function handler(req, res) {
       downloadUrl = oneDriveLink + '?download=1';
     }
 
-    // También intentar con /download en la URL
-    const altUrl = downloadUrl.replace('onedrive.live.com', 'onedrive.live.com');
+    // Descargar con axios
+    const response = await axios.get(downloadUrl, {
+      responseType: 'arraybuffer',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      timeout: 30000,
+      maxRedirects: 10
+    });
 
-    console.log('Descargando Excel desde:', downloadUrl);
-
-    // Intentar múltiples estrategias de descarga
-    let buffer = null;
-    let lastError = null;
-
-    // Estrategia 1: Con download=1
-    try {
-      console.log('Intentando con download=1...');
-      const response1 = await fetch(downloadUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        redirect: 'follow'
-      });
-      if (response1.ok) {
-        buffer = await response1.buffer();
-        console.log('✅ Descargado con download=1');
-        return parseAndReturn(buffer, res);
-      }
-    } catch (e) {
-      lastError = e;
-    }
-
-    // Estrategia 2: Link original
-    try {
-      console.log('Intentando con link original...');
-      const response2 = await fetch(oneDriveLink, {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        redirect: 'follow'
-      });
-      if (response2.ok) {
-        buffer = await response2.buffer();
-        console.log('✅ Descargado con link original');
-        return parseAndReturn(buffer, res);
-      }
-    } catch (e) {
-      lastError = e;
-    }
-
-    // Estrategia 3: Convertir 1drv.ms a redir.onedrive.com (descarga directa)
-    try {
-      console.log('Intentando con redir.onedrive.com...');
-      const redirUrl = oneDriveLink
-        .replace('https://1drv.ms', 'https://onedrive.live.com')
-        .replace('?e=', '?download=1&e=');
-
-      const response3 = await fetch(redirUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        redirect: 'follow'
-      });
-      if (response3.ok) {
-        buffer = await response3.buffer();
-        console.log('✅ Descargado con redir');
-        return parseAndReturn(buffer, res);
-      }
-    } catch (e) {
-      lastError = e;
-    }
-
-    if (!buffer) {
-      throw new Error('No se pudo descargar el archivo de OneDrive después de 3 intentos');
-    }
+    const buffer = response.data;
+    console.log('✅ Archivo descargado:', buffer.length, 'bytes');
 
     return parseAndReturn(buffer, res);
 
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('❌ Error descargando:', error.message);
     return res.status(500).json({
-      error: 'Error al leer Excel de OneDrive',
+      error: 'Error al descargar Excel de OneDrive',
       details: error.message
     });
   }
@@ -101,40 +49,28 @@ export default async function handler(req, res) {
 
 function parseAndReturn(buffer, res) {
   try {
-    // Verificar que sea un archivo válido (mínimo 100 bytes)
+    // Validar buffer
     if (!buffer || buffer.length < 100) {
-      throw new Error('Archivo muy pequeño o vacío. Verifica que el link sea un Excel válido.');
+      throw new Error('Archivo vacío o muy pequeño');
     }
 
-    // Verificar si parece HTML (comienza con <)
-    const firstChar = String.fromCharCode(buffer[0]);
-    if (firstChar === '<') {
-      console.error('Archivo descargado es HTML, no Excel');
-      throw new Error('El link descargó HTML en lugar de un archivo Excel. Verifica que sea un link de descarga directo.');
+    // Verificar si es HTML
+    const text = buffer.toString('utf8', 0, 100);
+    if (text.includes('<html') || text.includes('<!DOCTYPE')) {
+      throw new Error('El link retornó HTML en lugar de Excel. Verifica que sea un link válido.');
     }
+
+    console.log('📖 Parseando Excel...');
 
     // Parsear Excel
-    let workbook;
-    try {
-      workbook = XLSX.read(buffer, { type: 'buffer', cellFormula: false });
-    } catch (xlsxError) {
-      console.error('Error al parsear Excel:', xlsxError.message);
-      throw new Error(`Error al parsear Excel: ${xlsxError.message}. Verifica que sea un archivo Excel válido (.xlsx o .xls)`);
-    }
-
-    if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
-      throw new Error('El archivo Excel no tiene hojas. Verifica el archivo.');
-    }
-
-    const sheetName = workbook.SheetNames[0]; // Primera hoja
+    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-
-    // Convertir a JSON
     const data = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
-    console.log(`Leído ${data.length} filas del Excel`);
+    console.log('✅ Leído:', data.length, 'filas');
 
-    // Agrupar por VENDEDOR
+    // Agrupar por vendedor
     const facturasPorVendedor = {
       'Estefanya': [],
       'Josué': [],
@@ -142,11 +78,9 @@ function parseAndReturn(buffer, res) {
     };
 
     data.forEach(row => {
-      // Normalizar vendedor
       const vendedor = (row.VENDEDOR || '').trim();
       const vendedorLower = vendedor.toLowerCase();
 
-      // Crear objeto de factura
       const factura = {
         numero: row.FACTURA || '',
         cliente: row.Cliente || '',
@@ -168,7 +102,7 @@ function parseAndReturn(buffer, res) {
         vendedor: vendedor
       };
 
-      // Distribuir por vendedor (flexible con variaciones)
+      // Clasificar por vendedor
       if (vendedorLower.includes('estefan') || vendedorLower.includes('estefañ')) {
         facturasPorVendedor['Estefanya'].push(factura);
       } else if (vendedorLower.includes('josue') || vendedorLower.includes('josu') || vendedorLower.includes('josé')) {
@@ -178,15 +112,16 @@ function parseAndReturn(buffer, res) {
       }
     });
 
+    console.log(`📊 Facturas: Estefanya=${facturasPorVendedor['Estefanya'].length}, Josué=${facturasPorVendedor['Josué'].length}`);
+
     return res.status(200).json({
       success: true,
       total: data.length,
-      facturas: facturasPorVendedor,
-      rawData: data // Para debug
+      facturas: facturasPorVendedor
     });
 
   } catch (error) {
-    console.error('Error al parsear Excel:', error.message);
+    console.error('❌ Error parseando:', error.message);
     return res.status(500).json({
       error: 'Error al parsear Excel',
       details: error.message
