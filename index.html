@@ -1623,6 +1623,12 @@ function loadExcelFacturas(){
       console.log('📊 Total de filas en Excel:', rows.length);
       console.log('📋 Primeras 3 filas:', rows.slice(0, 3));
 
+      // Mostrar todas las columnas
+      if(rows.length > 0){
+        console.log('📑 Columnas del Excel:', Object.keys(rows[0]));
+        console.log('📝 Primer fila completa:', rows[0]);
+      }
+
       if(rows.length === 0){
         throw new Error('El Excel está vacío o no tiene datos');
       }
