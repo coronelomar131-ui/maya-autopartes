@@ -1627,36 +1627,37 @@ function loadExcelFacturas(){
         throw new Error('El Excel está vacío o no tiene datos');
       }
 
-      // Primero, detectar qué vendedores hay en el Excel
-      const vendedoresUnicos = new Set();
+      // Detectar vendedores únicos y contar facturas
+      const vendedoresMap = {};
       rows.forEach(row => {
         const v = (row.VENDEDOR || '').trim();
-        if(v) vendedoresUnicos.add(v);
+        if(v) {
+          vendedoresMap[v] = (vendedoresMap[v] || 0) + 1;
+        }
       });
 
-      console.log('🔍 Vendedores encontrados en Excel:', Array.from(vendedoresUnicos));
+      // Ordenar por cantidad de facturas y tomar los 2 principales
+      const vendedoresOrdenados = Object.entries(vendedoresMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 2)
+        .map(([nombre]) => nombre);
 
-      // Agrupar por vendedor
+      console.log('📊 Vendedores encontrados:', vendedoresMap);
+      console.log('🎯 Columna 1:', vendedoresOrdenados[0]);
+      console.log('🎯 Columna 2:', vendedoresOrdenados[1]);
+
+      // Agrupar en dos columnas (automático)
       const facturasPorVendedor = {
-        'Estefanya': [],
-        'Josué': [],
+        [vendedoresOrdenados[0] || 'Columna 1']: [],
+        [vendedoresOrdenados[1] || 'Columna 2']: [],
         'Otros': []
       };
 
-      let conDatos = 0;
-      let sinVendedor = 0;
-
       rows.forEach(row => {
         const vendedor = (row.VENDEDOR || '').trim();
-        const vendedorLower = vendedor.toLowerCase();
 
         // Si no tiene vendedor, saltar
-        if(!vendedor){
-          sinVendedor++;
-          return;
-        }
-
-        conDatos++;
+        if(!vendedor) return;
 
         const factura = {
           numero: row.FACTURA || '',
@@ -1679,24 +1680,11 @@ function loadExcelFacturas(){
           vendedor: vendedor
         };
 
-        // Clasificar MÁS flexible - buscar cualquier parecido
-        if(
-          vendedor === 'Estefanya' ||
-          vendedor === 'ESTEFANYA' ||
-          vendedorLower.includes('estefan') ||
-          vendedorLower.includes('estefañ') ||
-          vendedor === 'Estéfanya'
-        ){
-          facturasPorVendedor['Estefanya'].push(factura);
-        } else if(
-          vendedor === 'Josué' ||
-          vendedor === 'JOSUÉ' ||
-          vendedor === 'Josue' ||
-          vendedorLower.includes('josue') ||
-          vendedorLower.includes('josu') ||
-          vendedorLower.includes('josé')
-        ){
-          facturasPorVendedor['Josué'].push(factura);
+        // Asignar a su columna
+        if(vendedor === vendedoresOrdenados[0]){
+          facturasPorVendedor[vendedoresOrdenados[0]].push(factura);
+        } else if(vendedor === vendedoresOrdenados[1]){
+          facturasPorVendedor[vendedoresOrdenados[1]].push(factura);
         } else {
           facturasPorVendedor['Otros'].push(factura);
         }
