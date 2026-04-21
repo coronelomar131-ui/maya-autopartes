@@ -1899,41 +1899,41 @@ function generarNotaPDF(ventaId){
   if(!venta){ toast('⚠ Nota no encontrada'); return; }
 
   const html = `
-    <div style="font-family:Arial;padding:20px;max-width:800px">
+    <div style="font-family:Arial;padding:20px;max-width:800px;background:#fff">
       <div style="text-align:center;margin-bottom:30px">
         <img src="${logoBase64 || 'logo.jpg'}" style="max-width:120px;height:auto;margin-bottom:10px">
-        <h2 style="margin:5px 0;color:#1a3a52">MAYA AUTOPARTES</h2>
-        <p style="margin:0;color:#666;font-size:12px">Comercializadora de autopartes seminuevas</p>
+        <h2 style="margin:5px 0;color:#000">MAYA AUTOPARTES</h2>
+        <p style="margin:0;color:#000;font-size:12px">Comercializadora de autopartes seminuevas</p>
       </div>
 
-      <div style="border:1px solid #ddd;padding:15px;margin-bottom:20px;background:#f8f9fa">
-        <h3 style="margin:0 0 15px 0;color:#1a3a52;border-bottom:2px solid #ff8c00;padding-bottom:8px">NOTA DE VENTA</h3>
+      <div style="border:1px solid #ddd;padding:15px;margin-bottom:20px;background:#f5f5f5">
+        <h3 style="margin:0 0 15px 0;color:#000;border-bottom:2px solid #999;padding-bottom:8px">NOTA DE VENTA</h3>
 
         <table style="width:100%;font-size:13px;line-height:1.8">
           <tr>
-            <td><strong>Fecha:</strong> ${venta.fecha}</td>
-            <td style="text-align:right"><strong>Reporte:</strong> ${venta.reporte}</td>
+            <td><strong style="color:#000">Fecha:</strong> <span style="color:#000">${venta.fecha}</span></td>
+            <td style="text-align:right"><strong style="color:#000">Reporte:</strong> <span style="color:#000">${venta.reporte}</span></td>
           </tr>
           <tr>
-            <td><strong>Cliente:</strong> ${venta.cliente}</td>
-            <td style="text-align:right"><strong>Responsable:</strong> ${venta.responsable}</td>
+            <td><strong style="color:#000">Cliente:</strong> <span style="color:#000">${venta.cliente}</span></td>
+            <td style="text-align:right"><strong style="color:#000">Responsable:</strong> <span style="color:#000">${venta.responsable}</span></td>
           </tr>
           <tr>
-            <td colspan="2"><strong>Guía:</strong> ${venta.guia}</td>
+            <td colspan="2"><strong style="color:#000">Guía:</strong> <span style="color:#000">${venta.guia}</span></td>
           </tr>
         </table>
       </div>
 
-      <div style="border:1px solid #ddd;padding:15px;margin-bottom:20px">
-        <p style="margin:0;color:#666;white-space:pre-wrap">${venta.notas || 'Sin notas adicionales'}</p>
+      <div style="border:1px solid #ddd;padding:15px;margin-bottom:20px;background:#fff">
+        <p style="margin:0;color:#000;white-space:pre-wrap">${venta.notas || 'Sin notas adicionales'}</p>
       </div>
 
-      <div style="border-top:2px solid #ff8c00;padding-top:15px;text-align:right">
-        <h3 style="margin:0;color:#1a3a52">TOTAL: $${(venta.total || 0).toLocaleString('es-MX')}</h3>
-        <p style="margin:5px 0;color:#666;font-size:12px">Cobro: ${venta.cobro === 'cobrado' ? 'PAGADA' : 'PENDIENTE'}</p>
+      <div style="border-top:2px solid #999;padding-top:15px;text-align:right">
+        <h3 style="margin:0;color:#000">TOTAL: $${(venta.total || 0).toLocaleString('es-MX')}</h3>
+        <p style="margin:5px 0;color:#000;font-size:12px">Cobro: ${venta.cobro === 'cobrado' ? 'PAGADA' : 'PENDIENTE'}</p>
       </div>
 
-      <div style="margin-top:30px;padding-top:20px;border-top:1px solid #ddd;text-align:center;color:#999;font-size:11px">
+      <div style="margin-top:30px;padding-top:20px;border-top:1px solid #ddd;text-align:center;color:#000;font-size:11px">
         <p style="margin:0">Generado automáticamente por Maya Autopartes</p>
         <p style="margin:0">${new Date().toLocaleString('es-MX')}</p>
       </div>
