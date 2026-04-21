@@ -338,6 +338,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="ni" onclick="goPage('clientes',this)"><span class="ni-ico">◉</span>Clientes<span class="ni-badge" id="nb-c">0</span></div>
     <div class="nav-sec">Documentos</div>
     <div class="ni" onclick="goPage('facturas',this)"><span class="ni-ico">📄</span>Notas</div>
+    <div class="ni" onclick="goPage('mis-facturas',this)"><span class="ni-ico">📋</span>Mis Facturas</div>
     <div class="ni" onclick="goPage('drive-facturas',this)"><span class="ni-ico">☁️</span>Drive</div>
     <div class="nav-sec" id="nav-admin" style="display:none">Admin</div>
     <div class="ni" id="ni-users" onclick="openUsersModal()"><span class="ni-ico">👤</span>Crear Usuario</div>
@@ -589,6 +590,28 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       </div>
     </div>
 
+    <!-- ══ MIS FACTURAS (POR RFC) ══ -->
+    <div class="page" id="page-mis-facturas">
+      <div style="padding:1.5rem">
+        <div class="tcard">
+          <div class="thead-bar">
+            <div class="sbox"><input type="text" id="mf-s" placeholder="Buscar cliente, factura…" oninput="renderMisFacturas()"></div>
+            <select class="filt" id="mf-estado" onchange="renderMisFacturas()">
+              <option value="">Estado</option>
+              <option value="pagada">Pagada</option>
+              <option value="pendiente">Pendiente</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="exportMisFacturas()">📊 Exportar</button>
+          </div>
+          <div id="mf-grid" style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));padding:1rem"></div>
+          <div id="mf-empty" style="text-align:center;padding:2rem;color:var(--muted2);display:none">
+            <div style="font-size:2rem;margin-bottom:0.5rem">📭</div>
+            <p>Sin facturas para tu RFC</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ FACTURAS DESDE DRIVE ══ -->
     <div class="page" id="page-drive-facturas">
       <div style="padding:1.5rem">
@@ -790,6 +813,14 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
           <option value="admin">Administrador</option>
         </select>
       </div>
+      <div class="field"><label>RFC (para filtrar facturas)</label>
+        <select id="uu-rfc">
+          <option value="">-- Selecciona RFC --</option>
+          <option value="JOSUE">Josué</option>
+          <option value="ESTEFANYA">Estefanya</option>
+          <option value="ADMIN">Admin (todas las facturas)</option>
+        </select>
+      </div>
     </div>
     <div class="modal-ft">
       <button class="btn btn-ghost" onclick="closeOv('ov-users')">Cancelar</button>
@@ -825,8 +856,8 @@ function sv(){
 // ═════════════════════════════════════
 // SIDEBAR NAV  — closes on mobile after selecting
 // ═════════════════════════════════════
-const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',compac:'Exportar / Compac','drive-facturas':'Facturas desde Drive'};
-const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',compac:'Maya Autopartes / Exportar','drive-facturas':'Maya Autopartes / Facturas Drive'};
+const pgTitles={dashboard:'Dashboard',ventas:'Ventas',almacen:'Almacén',clientes:'Clientes',compac:'Exportar / Compac','mis-facturas':'Mis Facturas','drive-facturas':'Facturas desde Drive'};
+const pgBreads={dashboard:'Maya Autopartes / Inicio',ventas:'Maya Autopartes / Ventas',almacen:'Maya Autopartes / Almacén',clientes:'Maya Autopartes / Clientes',compac:'Maya Autopartes / Exportar','mis-facturas':'Maya Autopartes / Mis Facturas','drive-facturas':'Maya Autopartes / Facturas Drive'};
 
 function goPage(name, el){
   // Protección: si no hay sesión, no permitir cambiar de página (excepto login)
@@ -853,6 +884,7 @@ function goPage(name, el){
     clientes: ()=>{btn.textContent='+ Cliente';    btn.onclick=openClienteModal},
     facturas: ()=>{btn.textContent='⚙ Configurar'; btn.onclick=openCfgModal},
     compac:   ()=>{btn.textContent='⬇ Exportar';  btn.onclick=exportCompac},
+    'mis-facturas':()=>{btn.textContent='📋 Mis Facturas';btn.onclick=renderMisFacturas},
     'drive-facturas':()=>{btn.textContent='🔄 Sincronizar';btn.onclick=syncDriveFacturas},
   };
   if(acts[name]) acts[name]();
@@ -1488,6 +1520,79 @@ function deleteNota(id){
   toast('✅ Nota eliminada');
 }
 
+// Renderizar "Mis Facturas" - filtrado por RFC del usuario
+function renderMisFacturas(){
+  if(!sesionActual){
+    toast('⚠️ Debes hacer login');
+    return;
+  }
+
+  const rfcUsuario = sesionActual.rfc || '';
+  const q = (document.getElementById('mf-s')?.value || '').toLowerCase();
+  const est = document.getElementById('mf-estado')?.value || '';
+
+  // Filtrar: solo facturas del RFC del usuario (o todas si es admin)
+  let data = ventas.filter(v => {
+    if(rfcUsuario !== 'ADMIN' && v.rfc !== rfcUsuario) return false;
+    if(q && !`${v.cliente}`.toLowerCase().includes(q)) return false;
+    const estado = v.cobro === 'cobrado' ? 'pagada' : 'pendiente';
+    if(est && estado !== est) return false;
+    return true;
+  }).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+  const grid = document.getElementById('mf-grid');
+  const empty = document.getElementById('mf-empty');
+
+  if(data.length === 0){
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.innerHTML = data.map(v => {
+    const estado = v.cobro === 'cobrado' ? 'pagada' : 'pendiente';
+    const col = estado === 'pagada' ? 'var(--grn)' : 'var(--red)';
+    return `
+      <div style="background:var(--w);border:1px solid var(--brd);border-radius:var(--r2);padding:1.2rem;box-shadow:var(--sh);transition:all .18s">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem">
+          <div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--navy)">#${String(v.id).slice(-6)}</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:0.2rem">${v.fecha}</div>
+          </div>
+          <span style="background:${estado === 'pagada' ? 'rgba(25,135,84,.1)' : 'rgba(220,53,69,.1)'};color:${col};padding:0.3rem 0.6rem;border-radius:4px;font-size:0.75rem;font-weight:600;border:1px solid ${col}">${estado}</span>
+        </div>
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--brd)">
+          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.3rem">Cliente</div>
+          <div style="font-weight:600;color:var(--navy)">${v.cliente}</div>
+        </div>
+        <div style="font-size:1.3rem;font-weight:700;color:var(--teal);margin-bottom:1rem">${fmt(v.total)}</div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-xs" onclick="viewFactura(${v.id})" title="Ver">👁</button>
+          <button class="btn btn-primary btn-xs" onclick="printFactura(${v.id})" title="Imprimir">🖨</button>
+          <button class="btn btn-teal btn-xs" onclick="generarNotaPDF(${v.id})" title="PDF">📥</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Exportar mis facturas
+function exportMisFacturas(){
+  if(!sesionActual) return;
+  const rfcUsuario = sesionActual.rfc || '';
+  const data = ventas.filter(v => rfcUsuario === 'ADMIN' || v.rfc === rfcUsuario);
+  const csv = 'Fecha,Cliente,RFC,Cantidad,Total,Estado\n' +
+    data.map(v => `${v.fecha},${v.cliente},${v.rfc || ''},${v.cantidad},${v.total},${v.cobro}`).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mis_facturas_${sesionActual.usuario}.csv`;
+  a.click();
+  toast('✅ Facturas exportadas');
+}
+
 // Sincronizar facturas desde Google Drive
 async function syncDriveFacturas(){
   // Validar que Drive esté configurado
@@ -1664,9 +1769,10 @@ function saveNewUser(){
   const usuario = document.getElementById('uu-usuario')?.value?.trim();
   const pin = document.getElementById('uu-pin')?.value?.trim();
   const rol = document.getElementById('uu-rol')?.value || 'user';
+  const rfc = document.getElementById('uu-rfc')?.value?.trim() || '';
 
-  if(!nombre || !usuario || !pin){
-    toast('⚠ Completa todos los campos');
+  if(!nombre || !usuario || !pin || !rfc){
+    toast('⚠ Completa todos los campos (incluye RFC)');
     return;
   }
 
@@ -1686,6 +1792,7 @@ function saveNewUser(){
     usuario,
     pin,
     rol,
+    rfc,
     activo: true
   };
 
@@ -1697,6 +1804,7 @@ function saveNewUser(){
   document.getElementById('uu-usuario').value = '';
   document.getElementById('uu-pin').value = '';
   document.getElementById('uu-rol').value = 'user';
+  document.getElementById('uu-rfc').value = '';
 
   closeOv('ov-users');
   toast('✅ Usuario creado: ' + usuario);
