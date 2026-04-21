@@ -211,7 +211,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 .ff{grid-column:1/-1}
 .field{display:flex;flex-direction:column;gap:.22rem}
 .field label{font-family:var(--fm);font-size:.56rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:600}
-.field input,.field select,.field textarea{background:var(--s2);border:1.5px solid var(--brd);border-radius:var(--r);padding:.44rem .68rem;color:var(--txt);font-family:var(--fb);font-size:.83rem;outline:none;transition:border-color .16s;width:100%}
+.field input,.field select,.field textarea{background:var(--s2);border:1.5px solid var(--brd);border-radius:var(--r);padding:.44rem .68rem;color:#fff;font-family:var(--fb);font-size:.83rem;outline:none;transition:border-color .16s;width:100%}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);background:var(--w)}
 .field .hint{font-family:var(--fm);font-size:.54rem;color:var(--muted2);margin-top:.1rem}
 .modal-ft{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--brd)}
@@ -387,11 +387,11 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
           <div class="modal-hd" style="text-align:center">🔐 Acceso al Sistema</div>
           <div class="field" style="margin-bottom:1.2rem">
             <label>Usuario</label>
-            <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" autofocus style="font-size:1rem;padding:0.6rem" onkeypress="if(event.key==='Enter') document.getElementById('login-pin').focus()">
+            <input type="text" id="login-usuario" placeholder="Ingresa tu usuario" autofocus style="font-size:1rem;padding:0.6rem;color:#fff;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r)" onkeypress="if(event.key==='Enter') document.getElementById('login-pin').focus()">
           </div>
           <div class="field" style="margin-bottom:1.2rem">
             <label>PIN (4 dígitos)</label>
-            <input type="password" id="login-pin" placeholder="••••" maxlength="4" onkeypress="if(event.key==='Enter') doLogin()" style="font-size:1.5rem;letter-spacing:0.5rem;text-align:center;padding:0.6rem;font-weight:600">
+            <input type="password" id="login-pin" placeholder="••••" maxlength="4" onkeypress="if(event.key==='Enter') doLogin()" style="font-size:1.5rem;letter-spacing:0.5rem;text-align:center;padding:0.6rem;font-weight:600;color:#fff;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r)">
           </div>
           <div id="login-error" style="color:var(--red);font-size:0.85rem;margin-bottom:1rem;padding:0.6rem;background:rgba(220,53,69,0.1);border-radius:4px;border-left:3px solid var(--red);display:none"></div>
           <button class="btn btn-primary" style="width:100%;padding:0.7rem;font-size:1rem;font-weight:600;letter-spacing:0.5px" onclick="doLogin()">🔓 INGRESAR</button>
