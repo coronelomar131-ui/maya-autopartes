@@ -911,6 +911,10 @@ function goPage(name, el){
   if(name==='clientes')  renderC();
   if(name==='facturas')  renderF();
   if(name==='compac')    rCompac();
+  if(name==='mis-facturas') {
+    renderMisFacturas();
+    if(cfg.onedriveLink) startOneDriveAutoSync();
+  }
   badges();
   // 6. CLOSE SIDEBAR ON MOBILE
   closeSidebar();
@@ -1674,6 +1678,54 @@ async function syncOneDrive(){
     btn.disabled = false;
     btn.textContent = '🔄 Sincronizar Ahora';
     toast('❌ Error al sincronizar OneDrive');
+  }
+}
+
+// Auto-sincronización de OneDrive (cada 5 minutos)
+let onedriveAutoSyncInterval = null;
+
+async function autoSyncOneDriveData(){
+  // Sincronizar silenciosamente sin toasts
+  const link = cfg.onedriveLink;
+  if(!link) return;
+
+  try {
+    const response = await fetch('/api/read-onedrive-excel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oneDriveLink: link })
+    });
+
+    if (!response.ok) return;
+
+    const result = await response.json();
+    if (result.success) {
+      localStorage.setItem('onedrive_facturas', JSON.stringify(result.facturas));
+      renderMisFacturas(result.facturas);
+      console.log('✅ Auto-sync OneDrive:', result.total, 'facturas');
+    }
+  } catch(error){
+    console.warn('Error en auto-sync:', error.message);
+  }
+}
+
+function startOneDriveAutoSync(){
+  if(onedriveAutoSyncInterval) return; // Ya está activo
+
+  console.log('🔄 Auto-sync OneDrive iniciado (cada 5 min)');
+
+  // Sincronizar inmediatamente
+  autoSyncOneDriveData();
+
+  // Luego cada 5 minutos (300,000 ms)
+  onedriveAutoSyncInterval = setInterval(autoSyncOneDriveData, 300000);
+}
+
+function stopOneDriveAutoSync(){
+  if(onedriveAutoSyncInterval){
+    clearInterval(onedriveAutoSyncInterval);
+    onedriveAutoSyncInterval = null;
+    console.log('⏹️ Auto-sync OneDrive detenido');
   }
 }
 

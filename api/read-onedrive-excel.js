@@ -16,13 +16,16 @@ export default async function handler(req, res) {
   try {
     // Convertir link compartido a URL descargable
     // link: https://1drv.ms/x/c/XXXXXX/YYYYYYY?e=ZZZZZZ
-    // Para OneDrive, agregar download=1
+    // Para OneDrive, reemplazar download= si existe
     let downloadUrl = oneDriveLink;
     if (oneDriveLink.includes('?')) {
       downloadUrl = oneDriveLink.replace('?', '?download=1&');
     } else {
       downloadUrl = oneDriveLink + '?download=1';
     }
+
+    // También intentar con /download en la URL
+    const altUrl = downloadUrl.replace('onedrive.live.com', 'onedrive.live.com');
 
     console.log('Descargando Excel desde:', downloadUrl);
 
