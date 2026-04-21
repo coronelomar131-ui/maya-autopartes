@@ -29,32 +29,66 @@ export default async function handler(req, res) {
 
     console.log('Descargando Excel desde:', downloadUrl);
 
-    // Descargar el archivo
-    let response = await fetch(downloadUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      },
-      redirect: 'follow'
-    });
+    // Intentar múltiples estrategias de descarga
+    let buffer = null;
+    let lastError = null;
 
-    if (!response.ok) {
-      console.error('Error al descargar (con download=1):', response.status, response.statusText);
-
-      // Intentar sin download=1
-      console.log('Intentando sin download=1...');
-      response = await fetch(oneDriveLink, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-        },
+    // Estrategia 1: Con download=1
+    try {
+      console.log('Intentando con download=1...');
+      const response1 = await fetch(downloadUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
         redirect: 'follow'
       });
-
-      if (!response.ok) {
-        throw new Error(`Error al descargar: ${response.status}`);
+      if (response1.ok) {
+        buffer = await response1.buffer();
+        console.log('✅ Descargado con download=1');
+        return parseAndReturn(buffer, res);
       }
+    } catch (e) {
+      lastError = e;
     }
 
-    const buffer = await response.buffer();
+    // Estrategia 2: Link original
+    try {
+      console.log('Intentando con link original...');
+      const response2 = await fetch(oneDriveLink, {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        redirect: 'follow'
+      });
+      if (response2.ok) {
+        buffer = await response2.buffer();
+        console.log('✅ Descargado con link original');
+        return parseAndReturn(buffer, res);
+      }
+    } catch (e) {
+      lastError = e;
+    }
+
+    // Estrategia 3: Convertir 1drv.ms a redir.onedrive.com (descarga directa)
+    try {
+      console.log('Intentando con redir.onedrive.com...');
+      const redirUrl = oneDriveLink
+        .replace('https://1drv.ms', 'https://onedrive.live.com')
+        .replace('?e=', '?download=1&e=');
+
+      const response3 = await fetch(redirUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        redirect: 'follow'
+      });
+      if (response3.ok) {
+        buffer = await response3.buffer();
+        console.log('✅ Descargado con redir');
+        return parseAndReturn(buffer, res);
+      }
+    } catch (e) {
+      lastError = e;
+    }
+
+    if (!buffer) {
+      throw new Error('No se pudo descargar el archivo de OneDrive después de 3 intentos');
+    }
+
     return parseAndReturn(buffer, res);
 
   } catch (error) {
@@ -111,6 +145,7 @@ function parseAndReturn(buffer, res) {
     data.forEach(row => {
       // Normalizar vendedor
       const vendedor = (row.VENDEDOR || '').trim();
+      const vendedorLower = vendedor.toLowerCase();
 
       // Crear objeto de factura
       const factura = {
@@ -134,12 +169,12 @@ function parseAndReturn(buffer, res) {
         vendedor: vendedor
       };
 
-      // Distribuir por vendedor
-      if (vendedor.includes('Estefanya') || vendedor.includes('estefanya')) {
+      // Distribuir por vendedor (flexible con variaciones)
+      if (vendedorLower.includes('estefan') || vendedorLower.includes('estefañ')) {
         facturasPorVendedor['Estefanya'].push(factura);
-      } else if (vendedor.includes('Josué') || vendedor.includes('josue') || vendedor.includes('Josue')) {
+      } else if (vendedorLower.includes('josue') || vendedorLower.includes('josu') || vendedorLower.includes('josé')) {
         facturasPorVendedor['Josué'].push(factura);
-      } else {
+      } else if (vendedor) {
         facturasPorVendedor['Otros'].push(factura);
       }
     });
