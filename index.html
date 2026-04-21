@@ -1554,9 +1554,16 @@ async function initSupabaseSimple(){
     // Cargar almacén
     try {
       const { data } = await sbClient.from('almacen').select('data').limit(1);
-      if(data && data.length > 0 && data[0].data) almacen = data[0].data;
-      console.log('✅ Almacén cargado');
-    } catch(e){ console.error('❌ Almacén:', e); }
+      if(data && data.length > 0 && data[0].data && data[0].data.length > 0) {
+        almacen = data[0].data;
+      } else {
+        await importInventarioFromJSON();
+      }
+      console.log('✅ Almacén cargado:', almacen.length);
+    } catch(e){
+      console.error('❌ Almacén:', e);
+      await importInventarioFromJSON();
+    }
 
     // Configurar listeners
     setupUsersListener();
