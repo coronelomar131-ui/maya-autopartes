@@ -1808,8 +1808,12 @@ async function loadAlmacenFromSupabase(){
       // Si almacén está vacío, intenta cargar desde JSON
       await importInventarioFromJSON();
     }
+    // Renderizar después de cargar
+    setTimeout(() => { renderA(); badges(); }, 500);
   } catch(e){
     console.error('❌ Error cargando almacén:', e);
+    // Intentar cargar desde JSON si hay error
+    await importInventarioFromJSON();
   }
 }
 
