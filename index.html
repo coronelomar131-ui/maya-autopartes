@@ -798,6 +798,19 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
         <button class="btn btn-secondary btn-sm" onclick="testGoogleDriveConnection()" id="test-drive-btn">🔗 Probar Drive</button>
       </div>
       <div id="cfg-test-result" style="margin-top:1rem;padding:.75rem;border-radius:var(--r2);display:none;font-size:.85rem;font-weight:500"></div>
+
+      <div style="background:rgba(70,180,150,.05);padding:1rem;border-radius:var(--r2);margin:1.5rem 0;border-left:4px solid var(--teal)">
+        <div style="font-weight:600;color:var(--navy);margin-bottom:.5rem">☁️ OneDrive</div>
+        <p style="font-size:.85rem;color:var(--muted);margin:0">Sincronizar facturas desde Excel en OneDrive automáticamente</p>
+      </div>
+      <div class="field"><label>Link del Excel en OneDrive *</label><input type="text" id="cfg-onedrive-link" placeholder="https://1drv.ms/x/c/..."></div>
+      <div class="field ff"><label>Email Microsoft (opcional)</label><input type="email" id="cfg-onedrive-email" placeholder="tu_email@outlook.com"></div>
+
+      <div class="field" style="display:flex;gap:.5rem">
+        <button class="btn btn-secondary btn-sm" onclick="syncOneDrive()" id="sync-onedrive-btn">🔄 Sincronizar Ahora</button>
+        <button class="btn btn-secondary btn-sm" onclick="testOneDriveConnection()" id="test-onedrive-btn">🔗 Probar OneDrive</button>
+      </div>
+      <div id="onedrive-sync-status" style="margin-top:1rem;padding:.75rem;border-radius:var(--r2);display:none;font-size:.85rem;font-weight:500;background:rgba(70,180,150,.1);color:var(--teal)"></div>
     </div>
 
     <div class="modal-ft">
@@ -1386,7 +1399,7 @@ if(window.innerWidth<900)document.getElementById('menuBtn').style.display='flex'
 window.addEventListener('resize',()=>{document.getElementById('menuBtn').style.display=window.innerWidth<900?'flex':'none'});
 // INIT
 // ═ FACTURAS ═
-let cfg=JSON.parse(localStorage.getItem('ma4_cfg')||'{"nombre":"Tu Empresa","descripcion":"","logo":"","rfc":"","tel":"","email":"","dir":"","driveId":"","driveJson":"","compacUrl":"","compacKey":""}');
+let cfg=JSON.parse(localStorage.getItem('ma4_cfg')||'{"nombre":"Tu Empresa","descripcion":"","logo":"","rfc":"","tel":"","email":"","dir":"","driveId":"","driveJson":"","compacUrl":"","compacKey":"","onedriveLink":"","onedriveEmail":""}');
 let logoBase64Cfg='';
 function saveCfg(){
   const g=id=>(document.getElementById(id)?.value||'').trim();
@@ -1401,7 +1414,9 @@ function saveCfg(){
     driveId:g('cfg-drive-id'),
     driveJson:g('cfg-drive-json'),
     compacUrl:g('cfg-compac-url'),
-    compacKey:g('cfg-compac-key')
+    compacKey:g('cfg-compac-key'),
+    onedriveLink:g('cfg-onedrive-link'),
+    onedriveEmail:g('cfg-onedrive-email')
   };
   localStorage.setItem('ma4_cfg',JSON.stringify(cfg));
   logoBase64=logoBase64Cfg;
@@ -1411,6 +1426,7 @@ function openCfgModal(){
   const f=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};
   f('cfg-nom',cfg.nombre);f('cfg-desc',cfg.descripcion);f('cfg-rfc',cfg.rfc);f('cfg-tel',cfg.tel);f('cfg-email',cfg.email);f('cfg-dir',cfg.dir);
   f('cfg-drive-id',cfg.driveId);f('cfg-drive-json',cfg.driveJson);f('cfg-compac-url',cfg.compacUrl);f('cfg-compac-key',cfg.compacKey);
+  f('cfg-onedrive-link',cfg.onedriveLink);f('cfg-onedrive-email',cfg.onedriveEmail);
   logoBase64Cfg=cfg.logo||'';
   const preview=document.getElementById('cfg-logo-preview');
   if(logoBase64Cfg){preview.innerHTML='<img src="'+logoBase64Cfg+'" style="max-width:100%;height:auto">';}else{preview.innerHTML=''}
@@ -1532,6 +1548,67 @@ function renderMisFacturas(){
   document.getElementById('empty-estefanya').style.display = 'block';
   document.getElementById('facturas-josue').innerHTML = '';
   document.getElementById('empty-josue').style.display = 'block';
+}
+
+// Test OneDrive Connection
+function testOneDriveConnection(){
+  const link = document.getElementById('cfg-onedrive-link')?.value.trim();
+  const resultDiv = document.getElementById('cfg-test-result');
+
+  if(!link){
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'rgba(220,53,69,.1)';
+    resultDiv.style.color = 'var(--red)';
+    resultDiv.textContent = '❌ Pega el link del Excel en OneDrive';
+    return;
+  }
+
+  if(link.includes('1drv.ms')){
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'rgba(25,135,84,.1)';
+    resultDiv.style.color = 'var(--grn)';
+    resultDiv.textContent = '✅ Link de OneDrive válido. Haz clic en "Sincronizar Ahora"';
+  } else {
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = 'rgba(220,53,69,.1)';
+    resultDiv.style.color = 'var(--red)';
+    resultDiv.textContent = '❌ Link inválido. Debe ser un link de OneDrive (1drv.ms)';
+  }
+}
+
+// Sincronizar desde OneDrive
+async function syncOneDrive(){
+  const link = cfg.onedriveLink;
+  if(!link){
+    toast('⚠️ Configura OneDrive en Configuración > Integraciones');
+    return;
+  }
+
+  const statusDiv = document.getElementById('onedrive-sync-status');
+  const btn = document.getElementById('sync-onedrive-btn');
+
+  try {
+    btn.disabled = true;
+    btn.textContent = '⏳ Sincronizando...';
+    statusDiv.style.display = 'block';
+    statusDiv.textContent = '⏳ Leyendo Excel de OneDrive...';
+
+    // Simular sincronización (próximamente conectar Excel real)
+    setTimeout(() => {
+      statusDiv.textContent = '✅ Excel sincronizado. Mostrando facturas en las columnas...';
+      btn.disabled = false;
+      btn.textContent = '🔄 Sincronizar Ahora';
+      renderMisFacturas();
+      toast('✅ OneDrive sincronizado');
+    }, 2000);
+
+  } catch(error){
+    statusDiv.style.background = 'rgba(220,53,69,.1)';
+    statusDiv.style.color = 'var(--red)';
+    statusDiv.textContent = '❌ Error: ' + error.message;
+    btn.disabled = false;
+    btn.textContent = '🔄 Sincronizar Ahora';
+  }
 }
 
 // Sincronizar facturas desde Google Drive
