@@ -1447,15 +1447,27 @@ function renderMisFacturas(datos){
     emptyEst.style.display = 'block';
   } else {
     emptyEst.style.display = 'none';
-    estDiv.innerHTML = allFacturas.map(f => `
-      <div class="factura-item" style="padding:0.75rem;border-left:3px solid var(--navy);margin-bottom:0.5rem;background:rgba(26,58,82,.05);border-radius:var(--r1)">
-        <div style="font-weight:600;color:var(--navy);margin-bottom:0.25rem">#${f.numero}</div>
-        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.25rem">${f.cliente}</div>
-        <div style="font-size:0.9rem;font-weight:500;color:var(--navy)">$${parseFloat(f.total || 0).toFixed(2)}</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem">${f.fecha || ''}</div>
-        <div style="font-size:0.75rem;background:${f.estatus === 'Pagado' ? 'rgba(25,135,84,.2)' : 'rgba(220,53,69,.2)'};color:${f.estatus === 'Pagado' ? 'var(--grn)' : 'var(--red)'};padding:0.25rem 0.5rem;border-radius:2px;margin-top:0.25rem;display:inline-block">${f.estatus || 'Pendiente'}</div>
-      </div>
-    `).join('');
+    estDiv.innerHTML = allFacturas.map(f => {
+      const esPagado = f.estatus && (f.estatus.toLowerCase().includes('pagad') || f.estatus.toLowerCase().includes('cobrad'));
+      const colorBg = esPagado ? 'rgba(25,135,84,.1)' : 'rgba(220,53,69,.1)';
+      const colorText = esPagado ? 'var(--grn)' : 'var(--red)';
+      const statusText = esPagado ? '✅ Pagado' : '⏳ Pendiente';
+
+      return `
+        <div class="factura-item" style="padding:1rem;border-left:4px solid var(--navy);margin-bottom:0.75rem;background:rgba(26,58,82,.05);border-radius:var(--r1)">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.5rem">
+            <div style="font-weight:700;color:var(--navy);font-size:1.1rem">#${f.numero}</div>
+            <div style="font-size:0.75rem;background:${colorBg};color:${colorText};padding:0.35rem 0.75rem;border-radius:3px;font-weight:600">${statusText}</div>
+          </div>
+          <div style="font-size:0.95rem;color:var(--navy);margin-bottom:0.5rem;font-weight:600">${f.cliente}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.5rem;font-size:0.85rem">
+            <div><span style="color:var(--muted)">Fecha:</span> <span style="color:var(--navy)">${f.fecha || '—'}</span></div>
+            <div><span style="color:var(--muted)">Cantidad:</span> <span style="color:var(--navy)">${f.cantidad || '—'}</span></div>
+          </div>
+          <div style="font-size:1.2rem;font-weight:700;color:var(--navy);background:rgba(26,58,82,.1);padding:0.5rem;border-radius:4px;text-align:center">$${parseFloat(f.total || 0).toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+        </div>
+      `;
+    }).join('');
   }
 
   // Ocultar segunda columna
@@ -1501,16 +1513,26 @@ function loadExcelFacturas(){
         throw new Error('El Excel está vacío');
       }
 
-      // Simplemente guardar todas las filas como facturas
-      const allFacturas = rows.map(row => ({
-        numero: row.C4762 || row.FACTURA || '',
-        cliente: row.nom_prov || row.Cliente || '',
-        fecha: row['FECHA DE PAGO'] || row.Fecha || '',
-        cantidad: row[' cantidad '] || row.Piezas || '',
-        total: parseFloat((row['TOTAL='] || '0').toString().replace(/[$,]/g, '')) || 0,
-        estatus: row.ESTADO || row.ESTATUS || '',
-        vendedor: row.nom_prov || ''
-      })).filter(f => f.numero); // Solo filas con número de factura
+      // Mapear datos del Excel correctamente
+      const allFacturas = rows.filter(row => {
+        // Solo incluir filas con número de factura
+        const num = row.C4762 || row.FACTURA || '';
+        return num && num.toString().trim() !== '';
+      }).map(row => {
+        // Parsear total correctamente
+        const totalStr = (row['TOTAL='] || '0').toString().replace(/[$,\s]/g, '');
+        const totalNum = parseFloat(totalStr) || 0;
+
+        return {
+          numero: (row.C4762 || row.FACTURA || '').toString().trim(),
+          cliente: (row.nom_prov || row.Cliente || '').toString().trim(),
+          fecha: (row['FECHA DE PAGO'] || row.Fecha || '').toString().trim(),
+          cantidad: (row[' cantidad '] || row.Piezas || '').toString().trim(),
+          total: totalNum,
+          estatus: (row.ESTADO || row.ESTATUS || 'PENDIENTE').toString().trim(),
+          vendedor: (row.nom_prov || '').toString().trim()
+        };
+      });
 
       console.log('✅ Facturas procesadas:', allFacturas.length);
 
