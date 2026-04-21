@@ -803,14 +803,12 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
         <div style="font-weight:600;color:var(--navy);margin-bottom:.5rem">☁️ OneDrive</div>
         <p style="font-size:.85rem;color:var(--muted);margin:0">Sincronizar facturas desde Excel en OneDrive automáticamente</p>
       </div>
-      <div class="field"><label>Link del Excel en OneDrive *</label><input type="text" id="cfg-onedrive-link" placeholder="https://1drv.ms/x/c/..."></div>
-      <div class="field ff"><label>Email Microsoft (opcional)</label><input type="email" id="cfg-onedrive-email" placeholder="tu_email@outlook.com"></div>
+      <div class="field ff"><label>📊 Sube el Excel con facturas</label><input type="file" id="excel-facturas-file" accept=".xlsx,.xls,.csv" style="padding:0.5rem;border:2px dashed var(--orange);border-radius:var(--r1);cursor:pointer"></div>
 
-      <div class="field" style="display:flex;gap:.5rem">
-        <button class="btn btn-secondary btn-sm" onclick="syncOneDrive()" id="sync-onedrive-btn">🔄 Sincronizar Ahora</button>
-        <button class="btn btn-secondary btn-sm" onclick="testOneDriveConnection()" id="test-onedrive-btn">🔗 Probar OneDrive</button>
+      <div class="field">
+        <button class="btn btn-secondary" onclick="loadExcelFacturas()" id="load-excel-btn">📥 Cargar Excel</button>
       </div>
-      <div id="onedrive-sync-status" style="margin-top:1rem;padding:.75rem;border-radius:var(--r2);display:none;font-size:.85rem;font-weight:500;background:rgba(70,180,150,.1);color:var(--teal)"></div>
+      <div id="excel-load-status" style="margin-top:1rem;padding:.75rem;border-radius:var(--r2);display:none;font-size:.85rem;font-weight:500;background:rgba(70,180,150,.1);color:var(--teal)"></div>
     </div>
 
     <div class="modal-ft">
@@ -1596,137 +1594,115 @@ function renderMisFacturas(datos){
   }
 }
 
-// Test OneDrive Connection
-function testOneDriveConnection(){
-  const link = document.getElementById('cfg-onedrive-link')?.value.trim();
-  const resultDiv = document.getElementById('cfg-test-result');
+// Cargar Excel desde archivo subido
+function loadExcelFacturas(){
+  const fileInput = document.getElementById('excel-facturas-file');
+  const file = fileInput?.files?.[0];
+  const statusDiv = document.getElementById('excel-load-status');
 
-  if(!link){
-    resultDiv.style.display = 'block';
-    resultDiv.style.background = 'rgba(220,53,69,.1)';
-    resultDiv.style.color = 'var(--red)';
-    resultDiv.textContent = '❌ Pega el link del Excel en OneDrive';
-    return;
-  }
-
-  if(link.includes('1drv.ms')){
-    resultDiv.style.display = 'block';
-    resultDiv.style.background = 'rgba(25,135,84,.1)';
-    resultDiv.style.color = 'var(--grn)';
-    resultDiv.textContent = '✅ Link de OneDrive válido. Haz clic en "Sincronizar Ahora"';
-  } else {
-    resultDiv.style.display = 'block';
-    resultDiv.style.background = 'rgba(220,53,69,.1)';
-    resultDiv.style.color = 'var(--red)';
-    resultDiv.textContent = '❌ Link inválido. Debe ser un link de OneDrive (1drv.ms)';
-  }
-}
-
-// Sincronizar desde OneDrive
-async function syncOneDrive(){
-  const link = cfg.onedriveLink;
-  if(!link){
-    toast('⚠️ Configura OneDrive en Configuración > Integraciones');
-    return;
-  }
-
-  const statusDiv = document.getElementById('onedrive-sync-status');
-  const btn = document.getElementById('sync-onedrive-btn');
-
-  try {
-    btn.disabled = true;
-    btn.textContent = '⏳ Sincronizando...';
+  if(!file){
     statusDiv.style.display = 'block';
-    statusDiv.style.background = 'rgba(70,180,150,.1)';
-    statusDiv.style.color = 'var(--teal)';
-    statusDiv.textContent = '⏳ Leyendo Excel de OneDrive...';
-
-    // Llamar al backend para leer el Excel
-    const response = await fetch('/api/read-onedrive-excel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ oneDriveLink: link })
-    });
-
-    if (!response.ok) {
-      const errData = await response.json();
-      throw new Error(errData.details || errData.error || 'Error desconocido');
-    }
-
-    const result = await response.json();
-
-    if (!result.success) {
-      throw new Error(result.error || 'Error al leer Excel');
-    }
-
-    // Guardar datos en localStorage para renderizar
-    localStorage.setItem('onedrive_facturas', JSON.stringify(result.facturas));
-
-    statusDiv.textContent = `✅ Excel sincronizado (${result.total} facturas). Mostrando en columnas...`;
-    btn.disabled = false;
-    btn.textContent = '🔄 Sincronizar Ahora';
-
-    // Renderizar con datos reales
-    renderMisFacturas(result.facturas);
-    toast(`✅ OneDrive sincronizado: ${result.total} facturas`);
-
-  } catch(error){
-    console.error('Error sincronizando OneDrive:', error);
     statusDiv.style.background = 'rgba(220,53,69,.1)';
     statusDiv.style.color = 'var(--red)';
-    statusDiv.textContent = '❌ Error: ' + error.message;
-    btn.disabled = false;
-    btn.textContent = '🔄 Sincronizar Ahora';
-    toast('❌ Error al sincronizar OneDrive');
+    statusDiv.textContent = '❌ Selecciona un archivo Excel primero';
+    return;
   }
-}
 
-// Auto-sincronización de OneDrive (cada 5 minutos)
-let onedriveAutoSyncInterval = null;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      statusDiv.style.display = 'block';
+      statusDiv.style.background = 'rgba(70,180,150,.1)';
+      statusDiv.style.color = 'var(--teal)';
+      statusDiv.textContent = '⏳ Leyendo Excel...';
 
-async function autoSyncOneDriveData(){
-  // Sincronizar silenciosamente sin toasts
-  const link = cfg.onedriveLink;
-  if(!link) return;
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
-  try {
-    const response = await fetch('/api/read-onedrive-excel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ oneDriveLink: link })
-    });
+      if(rows.length === 0){
+        throw new Error('El Excel está vacío');
+      }
 
-    if (!response.ok) return;
+      // Agrupar por vendedor
+      const facturasPorVendedor = {
+        'Estefanya': [],
+        'Josué': [],
+        'Otros': []
+      };
 
-    const result = await response.json();
-    if (result.success) {
-      localStorage.setItem('onedrive_facturas', JSON.stringify(result.facturas));
-      renderMisFacturas(result.facturas);
-      console.log('✅ Auto-sync OneDrive:', result.total, 'facturas');
+      rows.forEach(row => {
+        const vendedor = (row.VENDEDOR || '').trim().toLowerCase();
+
+        const factura = {
+          numero: row.FACTURA || '',
+          cliente: row.Cliente || '',
+          fecha: row.Fecha || '',
+          neto: parseFloat(row.Neto) || 0,
+          iva: parseFloat(row.IVA) || 0,
+          total: parseFloat(row.Total) || 0,
+          saldo: parseFloat(row.Saldo) || 0,
+          producto: row.PRODUCTO || '',
+          marca: row.MARCA || '',
+          piezas: row.Piezas || '',
+          oc: row.OC || '',
+          reporte: row.REPORTE || '',
+          guia: row.GUIA || '',
+          link: row.LINK || '',
+          estatus: row.ESTATUS || '',
+          diasVencidos: row['DIAS VENCIDOS'] || '',
+          fechaPago: row['FECHA DE PAGO'] || ''
+        };
+
+        if(vendedor.includes('estefan')){
+          facturasPorVendedor['Estefanya'].push(factura);
+        } else if(vendedor.includes('josue') || vendedor.includes('josu')){
+          facturasPorVendedor['Josué'].push(factura);
+        } else if(row.VENDEDOR){
+          facturasPorVendedor['Otros'].push(factura);
+        }
+      });
+
+      localStorage.setItem('onedrive_facturas', JSON.stringify(facturasPorVendedor));
+
+      const total = facturasPorVendedor['Estefanya'].length + facturasPorVendedor['Josué'].length;
+      statusDiv.textContent = `✅ Excel cargado: ${total} facturas (${facturasPorVendedor['Estefanya'].length} Estefanya, ${facturasPorVendedor['Josué'].length} Josué)`;
+
+      renderMisFacturas(facturasPorVendedor);
+      toast(`✅ Excel cargado: ${total} facturas`);
+
+    } catch(error){
+      statusDiv.style.background = 'rgba(220,53,69,.1)';
+      statusDiv.style.color = 'var(--red)';
+      statusDiv.textContent = '❌ Error: ' + error.message;
+      toast('❌ Error al cargar Excel');
     }
-  } catch(error){
-    console.warn('Error en auto-sync:', error.message);
-  }
+  };
+
+  reader.readAsArrayBuffer(file);
 }
 
+// Sincronizar desde OneDrive (carga desde archivo local)
+function syncOneDrive(){
+  const facturas = JSON.parse(localStorage.getItem('onedrive_facturas') || '{}');
+
+  if(Object.keys(facturas).length === 0){
+    toast('⚠️ Primero carga el Excel en Configuración > Integraciones');
+    return;
+  }
+
+  renderMisFacturas(facturas);
+  toast('✅ Facturas actualizadas');
+}
+
+// Auto-sincronización está deshabilitada - usar carga manual de Excel
 function startOneDriveAutoSync(){
-  if(onedriveAutoSyncInterval) return; // Ya está activo
-
-  console.log('🔄 Auto-sync OneDrive iniciado (cada 5 min)');
-
-  // Sincronizar inmediatamente
-  autoSyncOneDriveData();
-
-  // Luego cada 5 minutos (300,000 ms)
-  onedriveAutoSyncInterval = setInterval(autoSyncOneDriveData, 300000);
+  console.log('💡 Carga el Excel manualmente en Configuración > Integraciones');
 }
 
 function stopOneDriveAutoSync(){
-  if(onedriveAutoSyncInterval){
-    clearInterval(onedriveAutoSyncInterval);
-    onedriveAutoSyncInterval = null;
-    console.log('⏹️ Auto-sync OneDrive detenido');
-  }
+  // No hay nada que detener
 }
 
 // Sincronizar facturas desde Google Drive
