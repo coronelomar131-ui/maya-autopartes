@@ -16,30 +16,39 @@ export default async function handler(req, res) {
   try {
     // Convertir link compartido a URL descargable
     // link: https://1drv.ms/x/c/XXXXXX/YYYYYYY?e=ZZZZZZ
-    // Extraer el ID de la carpeta y el ID del archivo
-    const downloadUrl = oneDriveLink.replace('?e=', '?download=1&e=');
+    // Para OneDrive, agregar download=1
+    let downloadUrl = oneDriveLink;
+    if (oneDriveLink.includes('?')) {
+      downloadUrl = oneDriveLink.replace('?', '?download=1&');
+    } else {
+      downloadUrl = oneDriveLink + '?download=1';
+    }
 
     console.log('Descargando Excel desde:', downloadUrl);
 
     // Descargar el archivo
-    const response = await fetch(downloadUrl, {
+    let response = await fetch(downloadUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      }
+      },
+      redirect: 'follow'
     });
 
     if (!response.ok) {
-      console.error('Error al descargar:', response.status, response.statusText);
+      console.error('Error al descargar (con download=1):', response.status, response.statusText);
 
-      // Si la descarga directa no funciona, intentar con el link original
-      console.log('Intentando con link directo...');
-      const response2 = await fetch(oneDriveLink);
-      if (!response2.ok) {
-        throw new Error(`Error al descargar: ${response2.status}`);
+      // Intentar sin download=1
+      console.log('Intentando sin download=1...');
+      response = await fetch(oneDriveLink, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        },
+        redirect: 'follow'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al descargar: ${response.status}`);
       }
-
-      const buffer = await response2.buffer();
-      return parseAndReturn(buffer, res);
     }
 
     const buffer = await response.buffer();
@@ -56,13 +65,36 @@ export default async function handler(req, res) {
 
 function parseAndReturn(buffer, res) {
   try {
+    // Verificar que sea un archivo válido (mínimo 100 bytes)
+    if (!buffer || buffer.length < 100) {
+      throw new Error('Archivo muy pequeño o vacío. Verifica que el link sea un Excel válido.');
+    }
+
+    // Verificar si parece HTML (comienza con <)
+    const firstChar = String.fromCharCode(buffer[0]);
+    if (firstChar === '<') {
+      console.error('Archivo descargado es HTML, no Excel');
+      throw new Error('El link descargó HTML en lugar de un archivo Excel. Verifica que sea un link de descarga directo.');
+    }
+
     // Parsear Excel
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    let workbook;
+    try {
+      workbook = XLSX.read(buffer, { type: 'buffer', cellFormula: false });
+    } catch (xlsxError) {
+      console.error('Error al parsear Excel:', xlsxError.message);
+      throw new Error(`Error al parsear Excel: ${xlsxError.message}. Verifica que sea un archivo Excel válido (.xlsx o .xls)`);
+    }
+
+    if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+      throw new Error('El archivo Excel no tiene hojas. Verifica el archivo.');
+    }
+
     const sheetName = workbook.SheetNames[0]; // Primera hoja
     const worksheet = workbook.Sheets[sheetName];
 
     // Convertir a JSON
-    const data = XLSX.utils.sheet_to_json(worksheet);
+    const data = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
     console.log(`Leído ${data.length} filas del Excel`);
 
