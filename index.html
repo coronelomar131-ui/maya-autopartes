@@ -809,7 +809,35 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
 
     <div class="modal-ft">
       <button class="btn btn-ghost" onclick="closeOv('ov-cfg')">Cancelar</button>
+      <button class="btn btn-secondary" onclick="openOv('ov-converter')" style="margin-right:auto">🔄 Convertir Excel→JSON</button>
       <button class="btn btn-primary" onclick="saveCfg()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONVERTIDOR EXCEL → JSON -->
+<div class="overlay" id="ov-converter" onclick="clsOv('ov-converter',event)">
+  <div class="modal" style="max-width:600px;max-height:90vh;overflow-y:auto">
+    <div class="modal-hd">
+      <h3>🔄 Convertir Excel a JSON</h3>
+      <button class="btn btn-ghost" onclick="closeOv('ov-converter')">✕</button>
+    </div>
+    <div class="modal-bd">
+      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:1rem">Carga cualquier Excel (Facturas, Clientes, Almacén) y obtén el JSON para copiar.</p>
+
+      <div class="field ff"><label>📊 Sube Excel</label><input type="file" id="converter-excel-file" accept=".xlsx,.xls,.csv" style="padding:0.5rem;border:2px dashed var(--orange);border-radius:var(--r1)"></div>
+
+      <div id="converter-output" style="display:none;margin-top:1rem">
+        <label style="display:block;margin-bottom:0.5rem">📋 JSON (copia esto):</label>
+        <textarea id="converter-json" readonly style="width:100%;height:300px;font-family:monospace;font-size:0.8rem;padding:0.5rem;border:1px solid var(--border);border-radius:var(--r1);background:#f5f5f5" onclick="this.select()"></textarea>
+        <small style="color:var(--muted);display:block;margin-top:0.5rem">Haz clic en el texto para seleccionar todo</small>
+      </div>
+
+      <div id="converter-status" style="margin-top:1rem;padding:0.75rem;border-radius:var(--r2);display:none;font-size:0.85rem;font-weight:500"></div>
+    </div>
+
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-converter')">Cerrar</button>
     </div>
   </div>
 </div>
@@ -1647,6 +1675,65 @@ function loadExcelFacturas(){
       statusDiv.style.color = 'var(--red)';
       statusDiv.textContent = '❌ Error: ' + error.message;
       toast('❌ Error al cargar Excel');
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+// CONVERTIDOR EXCEL → JSON
+document.addEventListener('DOMContentLoaded', () => {
+  const converterInput = document.getElementById('converter-excel-file');
+  if(converterInput){
+    converterInput.addEventListener('change', convertExcelToJson);
+  }
+});
+
+function convertExcelToJson(){
+  const fileInput = document.getElementById('converter-excel-file');
+  const file = fileInput?.files?.[0];
+  const statusDiv = document.getElementById('converter-status');
+  const outputDiv = document.getElementById('converter-output');
+  const jsonTextarea = document.getElementById('converter-json');
+
+  if(!file){
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      statusDiv.style.display = 'block';
+      statusDiv.style.background = 'rgba(70,180,150,.1)';
+      statusDiv.style.color = 'var(--teal)';
+      statusDiv.textContent = '⏳ Convirtiendo...';
+
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+      if(rows.length === 0){
+        throw new Error('El Excel está vacío');
+      }
+
+      // Convertir a JSON
+      const json = JSON.stringify(rows, null, 2);
+
+      jsonTextarea.value = json;
+      outputDiv.style.display = 'block';
+
+      statusDiv.style.background = 'rgba(25,135,84,.1)';
+      statusDiv.style.color = 'var(--grn)';
+      statusDiv.textContent = `✅ Convertido: ${rows.length} filas. Copia el JSON de abajo.`;
+
+    } catch(error){
+      console.error('Error:', error);
+      statusDiv.style.display = 'block';
+      statusDiv.style.background = 'rgba(220,53,69,.1)';
+      statusDiv.style.color = 'var(--red)';
+      statusDiv.textContent = '❌ Error: ' + error.message;
+      outputDiv.style.display = 'none';
     }
   };
 
