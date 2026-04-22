@@ -432,11 +432,11 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="page" id="page-ventas">
       <div class="tcard">
         <div class="thead-bar">
-          <div class="sbox"><input type="text" id="vs" placeholder="Buscar cliente, guía, reporte…" oninput="renderV()"></div>
-          <select class="filt" id="vf-st" onchange="renderV()"><option value="">Todos los status</option><option value="A">A — Alto costo</option><option value="B">B — Intermedio</option><option value="C">C — Bajo costo</option></select>
-          <select class="filt" id="vf-fa" onchange="renderV()"><option value="">Factura</option><option value="con">Con Factura</option><option value="sin">Sin Factura</option></select>
-          <select class="filt" id="vf-co" onchange="renderV()"><option value="">Cobro</option><option value="cobrado">Cobrado</option><option value="pendiente">Pendiente</option></select>
-          <select class="filt" id="vf-ve" onchange="renderV()"><option value="">Vencimiento</option><option value="v">Vencidos</option><option value="o">Al día</option></select>
+          <div class="sbox"><input type="text" id="vs" placeholder="Buscar cliente, guía, reporte…" oninput="renderVDebounced()"></div>
+          <select class="filt" id="vf-st" onchange="renderVDebounced()"><option value="">Todos los status</option><option value="A">A — Alto costo</option><option value="B">B — Intermedio</option><option value="C">C — Bajo costo</option></select>
+          <select class="filt" id="vf-fa" onchange="renderVDebounced()"><option value="">Factura</option><option value="con">Con Factura</option><option value="sin">Sin Factura</option></select>
+          <select class="filt" id="vf-co" onchange="renderVDebounced()"><option value="">Cobro</option><option value="cobrado">Cobrado</option><option value="pendiente">Pendiente</option></select>
+          <select class="filt" id="vf-ve" onchange="renderVDebounced()"><option value="">Vencimiento</option><option value="v">Vencidos</option><option value="o">Al día</option></select>
           <button class="btn btn-primary btn-sm" onclick="openVentaModal()">+ Nueva Venta</button>
         </div>
         <div class="twrap"><table><thead><tr>
@@ -458,9 +458,9 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
       <!-- filter + action bar -->
       <div class="alm-bar">
         <div class="alm-bar-left">
-          <div class="sbox" style="min-width:200px;max-width:260px"><input type="text" id="alm-s" placeholder="Buscar producto, SKU…" oninput="renderA()"></div>
-          <select class="filt" id="alm-cat" onchange="renderA()"><option value="">Todas las categorías</option></select>
-          <select class="filt" id="alm-stock" onchange="renderA()"><option value="">Todo el stock</option><option value="ok">Stock OK</option><option value="low">Stock Bajo</option><option value="zero">Sin Stock</option></select>
+          <div class="sbox" style="min-width:200px;max-width:260px"><input type="text" id="alm-s" placeholder="Buscar producto, SKU…" oninput="renderADebounced()"></div>
+          <select class="filt" id="alm-cat" onchange="renderADebounced()"><option value="">Todas las categorías</option></select>
+          <select class="filt" id="alm-stock" onchange="renderADebounced()"><option value="">Todo el stock</option><option value="ok">Stock OK</option><option value="low">Stock Bajo</option><option value="zero">Sin Stock</option></select>
         </div>
         <div style="display:flex;align-items:center;gap:.45rem">
           <div class="view-toggle">
@@ -497,8 +497,8 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <div class="page" id="page-clientes">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.55rem">
         <div class="alm-bar-left">
-          <div class="sbox" style="max-width:260px"><input type="text" id="cl-s" placeholder="Buscar nombre, RFC…" oninput="renderC()"></div>
-          <select class="filt" id="cl-ti" onchange="renderC()"><option value="">Todos</option><option value="con">Con Factura</option><option value="sin">Sin Factura</option></select>
+          <div class="sbox" style="max-width:260px"><input type="text" id="cl-s" placeholder="Buscar nombre, RFC…" oninput="renderCDebounced()"></div>
+          <select class="filt" id="cl-ti" onchange="renderCDebounced()"><option value="">Todos</option><option value="con">Con Factura</option><option value="sin">Sin Factura</option></select>
         </div>
         <button class="btn btn-primary btn-sm" onclick="openClienteModal()">+ Nuevo Cliente</button>
       </div>
@@ -513,9 +513,9 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
     <!-- ══ FACTURAS ══ -->
     <div class="page" id="page-facturas">
       <div class="frow">
-        <div class="sbox"><input type="text" id="f-s" placeholder="Buscar cliente…" oninput="renderF()"></div>
-        <select class="filt" id="f-estado" onchange="renderF()"><option value="">Estado</option><option value="pagada">Pagada</option><option value="pendiente">Pendiente</option></select>
-        <input type="date" id="f-desde" onchange="renderF()" style="padding:.36rem .6rem;border:1px solid var(--brd);border-radius:var(--r);background:var(--w);font-family:var(--fm);font-size:.75rem">
+        <div class="sbox"><input type="text" id="f-s" placeholder="Buscar cliente…" oninput="renderFDebounced()"></div>
+        <select class="filt" id="f-estado" onchange="renderFDebounced()"><option value="">Estado</option><option value="pagada">Pagada</option><option value="pendiente">Pendiente</option></select>
+        <input type="date" id="f-desde" onchange="renderFDebounced()" style="padding:.36rem .6rem;border:1px solid var(--brd);border-radius:var(--r);background:var(--w);font-family:var(--fm);font-size:.75rem">
         <button class="btn btn-teal btn-sm" onclick="exportarFacturasExcel()">📊 Excel</button>
         <button class="btn btn-teal btn-sm" onclick="openCfgModal()">⚙ Config</button>
       </div>
@@ -815,6 +815,23 @@ let eVId=null,eAId=null,eCId=null;
 let vSC='fecha',vSD=-1,vPg=1;
 let almView='cards';
 const PG=15;
+
+// ═════════════════════════════════════
+// OPTIMIZACIÓN: Debounce, Cache, Utilidades
+// ═════════════════════════════════════
+const debounce=(fn,delay=300)=>{let timer;return function(...args){clearTimeout(timer);timer=setTimeout(()=>fn(...args),delay)}};
+const cache=new Map();
+const getCached=(key,fn)=>{if(!cache.has(key)){cache.set(key,fn())}return cache.get(key)};
+const clearCache=()=>cache.clear();
+const memoize=fn=>{const m=new Map();return(...args)=>{const k=JSON.stringify(args);if(!m.has(k))m.set(k,fn(...args));return m.get(k)}};
+
+// ═════════════════════════════════════
+// Búsqueda optimizada con índices
+// ═════════════════════════════════════
+const findClienteByNombre=memoize(nombre=>clientes.find(c=>c.nombre===nombre));
+const findVentaById=id=>ventas.find(v=>v.id===id);
+const findProductoById=id=>almacen.find(p=>p.id===id);
+const filterByQuery=(arr,q,fields)=>q?arr.filter(item=>fields.some(f=>`${item[f]||''}`.toLowerCase().includes(q))):arr;
 
 function sv(){
   localStorage.setItem('ma4_v',JSON.stringify(ventas));
@@ -2284,6 +2301,18 @@ function setupAlmacenListener(){
 window.addEventListener('load', () => {
   setTimeout(initSupabaseSimple, 500);
 });
+
+// ═════════════════════════════════════
+// DEBOUNCED RENDER FUNCTIONS (Optimización)
+// ═════════════════════════════════════
+const renderVDebounced=debounce(renderV);
+const renderADebounced=debounce(renderA);
+const renderCDebounced=debounce(renderC);
+const renderFDebounced=debounce(renderF);
+
+// Auto-clear cache cuando cambian datos
+const originalSv=sv;
+sv=function(){originalSv();clearCache()};
 </script>
 
 <!-- XLSX Library for Excel import -->
