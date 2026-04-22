@@ -516,6 +516,7 @@ td{padding:.58rem .85rem;vertical-align:middle;white-space:nowrap}
         <div class="sbox"><input type="text" id="f-s" placeholder="Buscar cliente…" oninput="renderF()"></div>
         <select class="filt" id="f-estado" onchange="renderF()"><option value="">Estado</option><option value="pagada">Pagada</option><option value="pendiente">Pendiente</option></select>
         <input type="date" id="f-desde" onchange="renderF()" style="padding:.36rem .6rem;border:1px solid var(--brd);border-radius:var(--r);background:var(--w);font-family:var(--fm);font-size:.75rem">
+        <button class="btn btn-teal btn-sm" onclick="exportarFacturasExcel()">📊 Excel</button>
         <button class="btn btn-teal btn-sm" onclick="openCfgModal()">⚙ Config</button>
       </div>
       <div class="f-grid" id="f-g"></div>
@@ -1332,6 +1333,24 @@ function exportCSV(){
   dl([h,...rows].join('\n'),'maya_ventas.csv','text/csv');toast('✅ CSV exportado');
 }
 function exportJSON(){dl(JSON.stringify({ventas,clientes,almacen},null,2),'maya_datos.json','application/json');toast('✅ JSON exportado')}
+function exportarFacturasExcel(){
+  const facturas=ventas.filter(v=>v.factura==='con');
+  if(!facturas.length){toast('⚠ Sin facturas para exportar');return}
+  const data=facturas.map(v=>({
+    'ID':'#'+String(v.id).slice(-6),
+    'Cliente':v.cliente||'—',
+    'Fecha':v.fecha||'—',
+    'RFC':clientes.find(c=>c.nombre===v.cliente)?.rfc||'—',
+    'Total':v.total||0,
+    'Costo':v.costo||0,
+    'Utilidad':(v.total||0)-(v.costo||0),
+    'Estado':v.cobro==='cobrado'?'Pagada':'Pendiente',
+    'Responsable':v.responsable||'—',
+    'Fecha Factura':v.fechaFactura||'—'
+  }));
+  const ws=XLSX.utils.json_to_sheet(data);ws['!cols']=[{wch:10},{wch:20},{wch:12},{wch:15},{wch:12},{wch:12},{wch:12},{wch:12},{wch:15},{wch:12}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Facturas');
+  XLSX.writeFile(wb,'Maya_Facturas_'+today()+'.xlsx');toast('✅ Excel descargado')}
 function dl(c,f,t){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=f;a.click()}
 
 // ═════════════════════════════════════
