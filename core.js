@@ -614,6 +614,11 @@ async function deleteVenta(id) {
     ventas.splice(index, 1);
     sv({ skipAPI: true, notify: false });
 
+    // Sync deletion to Supabase
+    if (window.syncVentasToSupabase) {
+      await window.syncVentasToSupabase();
+    }
+
     // Enviar a API
     if (window.apiClient?.isAuthenticated()) {
       await window.apiClient.delete(`/ventas/${id}`);
@@ -686,6 +691,11 @@ async function deleteProducto(id) {
     almacen.splice(index, 1);
     sv({ skipAPI: true, notify: false });
 
+    // Sync deletion to Supabase
+    if (window.syncAlmacenToSupabase) {
+      await window.syncAlmacenToSupabase();
+    }
+
     if (window.apiClient?.isAuthenticated()) {
       await window.apiClient.delete(`/almacen/${id}`);
       console.log('✅ Producto eliminado');
@@ -756,6 +766,11 @@ async function deleteCliente(id) {
 
     clientes.splice(index, 1);
     sv({ skipAPI: true, notify: false });
+
+    // Sync deletion to Supabase
+    if (window.syncClientesToSupabase) {
+      await window.syncClientesToSupabase();
+    }
 
     if (window.apiClient?.isAuthenticated()) {
       await window.apiClient.delete(`/clientes/${id}`);
