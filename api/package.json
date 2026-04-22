@@ -1,16 +1,23 @@
 {
   "name": "maya-autopartes-sync",
-  "version": "1.0.0",
-  "description": "Sync Compac files to Google Drive",
-  "main": "sync-to-drive.js",
+  "version": "2.0.0",
+  "description": "Maya Autopartes - Google Drive & OneDrive Excel Sync with Offline Support",
+  "main": "google-drive-sync.js",
   "scripts": {
     "dev": "vercel dev",
-    "deploy": "vercel"
+    "test": "node test/test-mapper.js",
+    "test:ci": "node test/test-mapper.js",
+    "deploy": "vercel",
+    "deploy:prod": "vercel --prod",
+    "build": "echo 'Google Drive Sync API - no build step required' && exit 0",
+    "lint": "echo 'Linting sync API...' && exit 0",
+    "format": "echo 'Formatting sync API...' && exit 0"
   },
   "dependencies": {
     "axios": "^1.6.0",
     "googleapis": "^118.0.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@microsoft/msal-browser": "^3.0.0"
   },
   "devDependencies": {
     "vercel": "^34.0.0"

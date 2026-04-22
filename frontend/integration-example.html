@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Integration Example - Maya Autopartes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge.online {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge.offline {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976D2;
+        }
+
+        .btn-secondary {
+            background: #757575;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #616161;
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #388E3C;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #323232;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 6px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: #4CAF50;
+        }
+
+        .toast.error {
+            background: #f44336;
+        }
+
+        .queue-item {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            border-left: 3px solid #2196F3;
+        }
+
+        .queue-item.retry {
+            border-left-color: #ff9800;
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        .log-area {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .log-area > div {
+            padding: 2px 0;
+            line-height: 1.4;
+        }
+
+        .log-info { color: #87ceeb; }
+        .log-success { color: #00ff00; }
+        .log-warning { color: #ffa500; }
+        .log-error { color: #ff6b6b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚗 Maya Autopartes - API Integration</h1>
+            <div class="badge" id="status-badge">
+                <span class="badge-dot"></span>
+                <span id="status-text">Online</span>
+                <span id="queue-info" style="display:none;">• <span id="queue-count">0</span> pendientes</span>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid">
+            <!-- Connection Status -->
+            <div class="card">
+                <h3>🌐 Conexión</h3>
+                <div class="stat">
+                    <span class="stat-label">Estado</span>
+                    <span class="stat-value" id="conn-status">Online</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Autenticado</span>
+                    <span class="stat-value" id="auth-status">No</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Último sync</span>
+                    <span class="stat-value" id="last-sync">Nunca</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="testLogin()">Login Test</button>
+                    <button class="btn-danger" onclick="testLogout()">Logout</button>
+                </div>
+            </div>
+
+            <!-- Data Stats -->
+            <div class="card">
+                <h3>📊 Datos</h3>
+                <div class="stat">
+                    <span class="stat-label">Ventas</span>
+                    <span class="stat-value" id="count-ventas">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Productos</span>
+                    <span class="stat-value" id="count-productos">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Clientes</span>
+                    <span class="stat-value" id="count-clientes">0</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="testLoadData()">Cargar datos</button>
+                    <button class="btn-secondary" onclick="testRefreshCache()">Limpiar cache</button>
+                </div>
+            </div>
+
+            <!-- Sync Queue -->
+            <div class="card">
+                <h3>📋 Queue de Sync</h3>
+                <div class="stat">
+                    <span class="stat-label">Pendientes</span>
+                    <span class="stat-value" id="queue-pending">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Sincronizando</span>
+                    <span class="stat-value" id="queue-syncing">No</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Fallidos</span>
+                    <span class="stat-value" id="queue-failed">0</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="testSync()">Sincronizar</button>
+                    <button class="btn-danger" onclick="testClearQueue()">Limpiar queue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Requests -->
+        <div class="grid">
+            <!-- API Tests -->
+            <div class="card">
+                <h3>🧪 Tests de API</h3>
+                <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="testGetVentas()">
+                    GET /ventas
+                </button>
+                <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="testCreateVenta()">
+                    POST /ventas (test data)
+                </button>
+                <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="testOfflineMode()">
+                    🌐 Simular Offline
+                </button>
+                <div class="code-block" id="api-test-result"></div>
+            </div>
+
+            <!-- CRUD Operations -->
+            <div class="card">
+                <h3>🛠️ Operaciones CRUD</h3>
+                <button class="btn-success" style="width: 100%; margin-bottom: 8px;" onclick="testAddVenta()">
+                    ➕ Agregar venta
+                </button>
+                <button class="btn-success" style="width: 100%; margin-bottom: 8px;" onclick="testAddProducto()">
+                    ➕ Agregar producto
+                </button>
+                <button class="btn-success" style="width: 100%; margin-bottom: 8px;" onclick="testAddCliente()">
+                    ➕ Agregar cliente
+                </button>
+                <div class="code-block" id="crud-test-result"></div>
+            </div>
+        </div>
+
+        <!-- Queue Monitor -->
+        <div class="card">
+            <h3>📤 Monitor de Queue</h3>
+            <div id="queue-monitor" style="min-height: 100px;">
+                <p style="color: #999; font-size: 12px;">No hay requests en queue</p>
+            </div>
+        </div>
+
+        <!-- Console Log -->
+        <div class="card">
+            <h3>📝 Console Log</h3>
+            <button class="btn-secondary" onclick="clearLog()">Limpiar</button>
+            <div class="log-area" id="console-log"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" style="display: none;"></div>
+
+    <!-- Scripts -->
+    <script src="./api-client.js"></script>
+    <script src="./sync-queue.js"></script>
+    <script src="../core.js"></script>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // LOGGING SYSTEM
+        // ═══════════════════════════════════════════════════════════════════════
+
+        const logContainer = document.getElementById('console-log');
+        const maxLogs = 50;
+        let logs = [];
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const log = document.createElement('div');
+            log.className = `log-${type}`;
+            log.textContent = `[${timestamp}] ${message}`;
+
+            logs.push(log);
+            if (logs.length > maxLogs) {
+                logs[0].remove();
+                logs.shift();
+            }
+
+            logContainer.appendChild(log);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            logContainer.innerHTML = '';
+            logs = [];
+        }
+
+        // Override console
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog(args.join(' '), 'warning');
+        };
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STATUS MONITORING
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function updateStatus() {
+            const connStatus = apiClient.getConnectionStatus();
+            const syncStatus = syncQueue.getStatus();
+            const globalStatus = getSyncStatus();
+
+            // Connection badge
+            const badge = document.getElementById('status-badge');
+            const statusText = document.getElementById('status-text');
+            const queueInfo = document.getElementById('queue-info');
+            const queueCount = document.getElementById('queue-count');
+
+            if (connStatus.online) {
+                badge.className = 'badge online';
+                statusText.textContent = 'Online';
+            } else {
+                badge.className = 'badge offline';
+                statusText.textContent = 'Offline';
+            }
+
+            if (syncStatus.queued > 0) {
+                queueInfo.style.display = 'inline';
+                queueCount.textContent = syncStatus.queued;
+            } else {
+                queueInfo.style.display = 'none';
+            }
+
+            // Connection card
+            document.getElementById('conn-status').textContent =
+                connStatus.online ? '✅ Online' : '❌ Offline';
+            document.getElementById('auth-status').textContent =
+                connStatus.authenticated ? '✅ Sí' : '❌ No';
+            document.getElementById('last-sync').textContent =
+                globalStatus.lastSync ? new Date(globalStatus.lastSync).toLocaleTimeString() : 'Nunca';
+
+            // Data stats
+            document.getElementById('count-ventas').textContent = ventas.length;
+            document.getElementById('count-productos').textContent = almacen.length;
+            document.getElementById('count-clientes').textContent = clientes.length;
+
+            // Sync queue stats
+            document.getElementById('queue-pending').textContent = syncStatus.queued;
+            document.getElementById('queue-syncing').textContent = syncStatus.syncing ? '✅ Sí' : '❌ No';
+            document.getElementById('queue-failed').textContent = syncStatus.failedCount;
+
+            // Queue monitor
+            updateQueueMonitor(syncStatus.queued, syncQueue.getQueue());
+        }
+
+        function updateQueueMonitor(count, queue) {
+            const monitor = document.getElementById('queue-monitor');
+
+            if (count === 0) {
+                monitor.innerHTML = '<p style="color: #999; font-size: 12px;">No hay requests en queue</p>';
+                return;
+            }
+
+            monitor.innerHTML = queue.map(req => `
+                <div class="queue-item${req.retries > 0 ? ' retry' : ''}">
+                    <strong>${req.method}</strong> ${req.endpoint}
+                    ${req.retries > 0 ? `<span style="color: #ff9800;"> (${req.retries} retries)</span>` : ''}
+                    ${req.lastError ? `<span style="color: #f44336;"> - ${req.lastError}</span>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Update every 500ms
+        setInterval(updateStatus, 500);
+        updateStatus();
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // EVENT LISTENERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        apiClient.addListener(({ event, data }) => {
+            addLog(`API: ${event}`, 'info');
+            updateStatus();
+        });
+
+        syncQueue.onStatusChange(({ event, status }) => {
+            addLog(`Queue: ${event} (${status.queued} pending)`, 'info');
+            updateStatus();
+        });
+
+        window.addEventListener('online', () => {
+            addLog('Browser online event', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            addLog('Browser offline event', 'warning');
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // TEST FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        async function testLogin() {
+            try {
+                showToast('🔐 Intentando login de prueba...');
+                // Nota: necesitas un endpoint /auth/login en el backend
+                const result = await apiClient.login('test@maya.com', 'password123');
+                addLog(`✅ Login exitoso: ${result.user.email}`, 'success');
+                updateStatus();
+            } catch (error) {
+                addLog(`❌ Login falló: ${error.message}`, 'error');
+                showToast(`❌ Login falló: ${error.message}`, 'error');
+            }
+        }
+
+        function testLogout() {
+            apiClient.logout();
+            addLog('✅ Logout exitoso', 'success');
+            updateStatus();
+            showToast('✅ Logout exitoso');
+        }
+
+        async function testLoadData() {
+            try {
+                showToast('📥 Cargando datos...');
+                const result = await loadData();
+                addLog(`✅ Datos cargados: ${JSON.stringify(result.count)}`, 'success');
+                updateStatus();
+                showToast('✅ Datos cargados');
+            } catch (error) {
+                addLog(`❌ Error cargando datos: ${error.message}`, 'error');
+                showToast(`❌ ${error.message}`, 'error');
+            }
+        }
+
+        function testRefreshCache() {
+            apiClient.clearCache();
+            addLog('✅ Cache limpiado', 'success');
+            showToast('✅ Cache limpiado');
+        }
+
+        async function testGetVentas() {
+            try {
+                showToast('📡 Obteniendo ventas...');
+                const result = await apiClient.get('/ventas');
+                document.getElementById('api-test-result').textContent =
+                    JSON.stringify(result, null, 2).substring(0, 200) + '...';
+                addLog(`✅ GET /ventas: ${result.length || Object.keys(result).length} items`, 'success');
+                showToast('✅ Ventas obtenidas');
+            } catch (error) {
+                document.getElementById('api-test-result').textContent = `Error: ${error.message}`;
+                addLog(`❌ GET /ventas falló: ${error.message}`, 'error');
+                showToast(`❌ ${error.message}`, 'error');
+            }
+        }
+
+        async function testCreateVenta() {
+            try {
+                showToast('📝 Creando venta de prueba...');
+                const venta = {
+                    cliente: 'Test Cliente ' + Date.now(),
+                    total: Math.random() * 5000,
+                    fecha: new Date().toISOString().split('T')[0],
+                    responsable: 'Test User'
+                };
+                const result = await apiClient.post('/ventas', venta);
+                document.getElementById('api-test-result').textContent =
+                    JSON.stringify(result, null, 2);
+                addLog(`✅ POST /ventas: venta creada`, 'success');
+                showToast('✅ Venta creada');
+            } catch (error) {
+                document.getElementById('api-test-result').textContent = `Error: ${error.message}`;
+                addLog(`❌ POST /ventas falló: ${error.message}`, 'error');
+                showToast(`❌ ${error.message}`, 'error');
+            }
+        }
+
+        async function testOfflineMode() {
+            const isOffline = !apiClient.isOnline();
+            if (isOffline) {
+                window.dispatchEvent(new Event('online'));
+                showToast('✅ Modo Online simulado');
+                addLog('🌐 Simulando online', 'info');
+            } else {
+                window.dispatchEvent(new Event('offline'));
+                showToast('⚠️ Modo Offline simulado');
+                addLog('❌ Simulando offline', 'warning');
+            }
+        }
+
+        async function testAddVenta() {
+            try {
+                const venta = await addVenta({
+                    cliente: 'Test ' + Date.now(),
+                    total: Math.random() * 5000,
+                    fecha: new Date().toISOString().split('T')[0],
+                    responsable: 'Test'
+                });
+                document.getElementById('crud-test-result').textContent =
+                    JSON.stringify(venta, null, 2);
+                addLog(`✅ Venta agregada (${ventas.length} total)`, 'success');
+                updateStatus();
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAddProducto() {
+            try {
+                const prod = await addProducto({
+                    nombre: 'Producto Test ' + Date.now(),
+                    categoria: 'Test',
+                    precio: Math.random() * 1000,
+                    stock: Math.floor(Math.random() * 100)
+                });
+                document.getElementById('crud-test-result').textContent =
+                    JSON.stringify(prod, null, 2);
+                addLog(`✅ Producto agregado (${almacen.length} total)`, 'success');
+                updateStatus();
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAddCliente() {
+            try {
+                const cli = await addCliente({
+                    nombre: 'Cliente Test ' + Date.now(),
+                    email: `test${Date.now()}@example.com`,
+                    telefono: '1234567890'
+                });
+                document.getElementById('crud-test-result').textContent =
+                    JSON.stringify(cli, null, 2);
+                addLog(`✅ Cliente agregado (${clientes.length} total)`, 'success');
+                updateStatus();
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSync() {
+            try {
+                addLog('📤 Sincronizando queue...', 'info');
+                const result = await syncQueue.sync();
+                addLog(`✅ Sync completado: ${result.synced} OK, ${result.failed} fallidos`, 'success');
+                updateStatus();
+            } catch (error) {
+                addLog(`❌ Sync falló: ${error.message}`, 'error');
+            }
+        }
+
+        function testClearQueue() {
+            syncQueue.clearQueue();
+            addLog('✅ Queue limpiado', 'success');
+            updateStatus();
+            showToast('✅ Queue limpiado');
+        }
+
+        // Initial message
+        addLog('🚀 Maya Autopartes API Integration Ready', 'info');
+        addLog('Abre DevTools para ver detalles completos', 'info');
+    </script>
+</body>
+</html>

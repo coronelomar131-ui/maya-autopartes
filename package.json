@@ -1,0 +1,44 @@
+{
+  "name": "maya-autopartes",
+  "version": "1.0.0",
+  "description": "Maya Autopartes - Sistema de Gestión de Inventario con Sync Real-time",
+  "private": true,
+  "author": "Maya Autopartes",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace=backend & npm run dev --workspace=api",
+    "build": "npm run build --workspace=backend --workspace=api",
+    "start": "npm start --workspace=backend",
+    "test": "npm test --workspace=backend && npm test --workspace=api",
+    "test:watch": "npm run test:watch --workspace=backend",
+    "test:ci": "npm run test:ci --workspace=backend",
+    "lint": "npm run lint --workspace=backend --workspace=api",
+    "lint:fix": "npm run lint:fix --workspace=backend --workspace=api",
+    "format": "npm run format --workspace=backend --workspace=api",
+    "format:check": "npm run format:check --workspace=backend --workspace=api",
+    "deploy": "vercel",
+    "deploy:prod": "vercel --prod",
+    "health-check": "curl https://maya-autopartes.vercel.app/api/health",
+    "clean": "rm -rf dist coverage node_modules",
+    "verify": "npm run lint && npm run test && npm run build"
+  },
+  "workspaces": [
+    "backend",
+    "api"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": [
+    "inventory",
+    "sales",
+    "sync",
+    "supabase",
+    "autopartes",
+    "real-time"
+  ]
+}

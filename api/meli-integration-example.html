@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MercadoLibre Integration Example - Maya Autopartes</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+      color: #333;
+    }
+
+    .demo-section {
+      background: white;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .demo-section h2 {
+      margin-bottom: 1rem;
+      color: #555;
+      border-bottom: 2px solid #ff8c00;
+      padding-bottom: 0.5rem;
+    }
+
+    .code-block {
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 1rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      font-family: 'Courier New', monospace;
+      color: #333;
+    }
+
+    .demo-controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      background: #1a3a52;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #0f2538;
+    }
+
+    .btn.secondary {
+      background: #ff8c00;
+    }
+
+    .btn.secondary:hover {
+      background: #e07b00;
+    }
+
+    .output {
+      background: #f0f0f0;
+      border-left: 4px solid #1a3a52;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .output.success {
+      border-left-color: #51cf66;
+      background: #f0fdf4;
+    }
+
+    .output.error {
+      border-left-color: #ff6b6b;
+      background: #fff5f5;
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: #fff5f5;
+      border-radius: 4px;
+      margin: 0.5rem 0;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff6b6b;
+    }
+
+    .status-dot.online {
+      background: #51cf66;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .card {
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 4px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    .card code {
+      display: block;
+      background: white;
+      padding: 0.5rem;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: #c92a2a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+      background: #f5f5f5;
+      font-weight: 600;
+    }
+
+    .note {
+      background: #fffbea;
+      border-left: 4px solid #f59f00;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+      color: #5c4a08;
+    }
+
+    .warning {
+      background: #fff5f5;
+      border-left: 4px solid #ff6b6b;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+      color: #5c1a1a;
+    }
+
+    .success {
+      background: #f0fdf4;
+      border-left: 4px solid #51cf66;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+      color: #1a5e1a;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🛒 MercadoLibre Integration - Demo & Examples</h1>
+
+  <!-- 1. Loading Scripts -->
+  <div class="demo-section">
+    <h2>1️⃣ Cargar Scripts</h2>
+
+    <p>Agregar los siguientes scripts en tu `index.html` antes de `</body>`:</p>
+
+    <div class="code-block">
+&lt;!-- MercadoLibre Integration Scripts --&gt;
+&lt;script src="api/mercadolibre-sync.js"&gt;&lt;/script&gt;
+&lt;script src="api/meli-mapper.js"&gt;&lt;/script&gt;
+&lt;script src="api/meli-ui-integration.js"&gt;&lt;/script&gt;
+    </div>
+
+    <div class="note">
+      <strong>✓ Orden importante:</strong> mercadolibre-sync.js debe ir primero (contiene configuración base)
+    </div>
+  </div>
+
+  <!-- 2. Initialize -->
+  <div class="demo-section">
+    <h2>2️⃣ Inicializar en el HTML</h2>
+
+    <p>Dentro de `DOMContentLoaded` o al cargar la app:</p>
+
+    <div class="code-block">
+document.addEventListener('DOMContentLoaded', () => {
+  // Inicializar MercadoLibre
+  if (typeof window.MELI !== 'undefined') {
+    window.MELI.init();
+    console.log('✅ MercadoLibre initialized');
+  }
+});
+    </div>
+
+    <div class="demo-controls">
+      <button class="btn" onclick="testInit()">Test: Inicializar</button>
+      <button class="btn secondary" onclick="testState()">Test: Ver Estado</button>
+    </div>
+
+    <div class="output" id="initOutput"></div>
+  </div>
+
+  <!-- 3. Configuration Modal -->
+  <div class="demo-section">
+    <h2>3️⃣ Agregar Sección en Modal de Configuración</h2>
+
+    <p>En tu función `setupConfigModal()` en `ui.js`:</p>
+
+    <div class="code-block">
+function setupConfigModal() {
+  // ... código existente ...
+
+  // Agregar sección MercadoLibre
+  if (typeof window.MELI_UI !== 'undefined') {
+    const meliSection = window.MELI_UI.createConfigSection();
+    const configContent = document.getElementById('configContent');
+    configContent.innerHTML += meliSection;
+
+    // Actualizar UI
+    window.MELI_UI.updateStatusUI();
+  }
+}
+    </div>
+
+    <div class="demo-controls">
+      <button class="btn" onclick="showConfigExample()">Ver Ejemplo</button>
+    </div>
+
+    <div id="configExample" style="display: none;">
+      <div class="code-block">
+Output: Se mostrará:
+┌────────────────────────────────┐
+│ MercadoLibre Integration       │
+├────────────────────────────────┤
+│ Client ID: [____________]      │
+│ Client Secret: [______]        │
+│ [🔗 Conectar con ML]           │
+│                                │
+│ Estado: ❌ Desconectado       │
+└────────────────────────────────┘
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Dashboard -->
+  <div class="demo-section">
+    <h2>4️⃣ Agregar Dashboard</h2>
+
+    <p>En tu página de Home o Almacén:</p>
+
+    <div class="code-block">
+function setupDashboard() {
+  // ... código existente ...
+
+  // Agregar dashboard MELI
+  if (typeof window.MELI_UI !== 'undefined') {
+    const dashboard = window.MELI_UI.createDashboard();
+    const mainContent = document.querySelector('.main-content');
+    mainContent.insertAdjacentHTML('beforeend', dashboard);
+
+    // Actualizar cada 5 segundos
+    setInterval(() => {
+      window.MELI_UI.updateDashboard();
+    }, 5000);
+  }
+}
+    </div>
+
+    <div class="demo-controls">
+      <button class="btn" onclick="showDashboardExample()">Ver Ejemplo</button>
+    </div>
+
+    <div id="dashboardExample" style="display: none;">
+      <div class="code-block">
+Output: Se mostrará:
+┌─────────────────────────────────┐
+│ 🔄 MercadoLibre Sync            │
+├─────────────────────────────────┤
+│ Última sincronización: Nunca    │
+│ Próxima sincronización: -       │
+│ Estado: Inactivo                │
+│                                 │
+│ [🔄 Sincronizar] [Configurar]   │
+└─────────────────────────────────┘
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Table Integration -->
+  <div class="demo-section">
+    <h2>5️⃣ Integrar en Tabla de Inventario</h2>
+
+    <p>Mostrar status de sincronización en cada fila:</p>
+
+    <div class="code-block">
+function renderAlmacenRow(product) {
+  const meliIcon = typeof window.MELI_UI !== 'undefined'
+    ? window.MELI_UI.getStatusIcon(product)
+    : '⚪';
+
+  const meliTooltip = typeof window.MELI_UI !== 'undefined'
+    ? window.MELI_UI.getStatusTooltip(product)
+    : '';
+
+  return `
+    &lt;tr&gt;
+      &lt;td&gt;${product.nombre}&lt;/td&gt;
+      &lt;td&gt;${product.sku}&lt;/td&gt;
+      &lt;td&gt;$${product.precio}&lt;/td&gt;
+      &lt;td&gt;${product.stock}&lt;/td&gt;
+      &lt;td title="${meliTooltip}"&gt;${meliIcon}&lt;/td&gt;
+    &lt;/tr&gt;
+  `;
+}
+    </div>
+
+    <p>Resultado: Iconos en tabla</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>SKU</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th>MELI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Puerta Delantera</td>
+          <td>MA-001</td>
+          <td>$1,250</td>
+          <td>50</td>
+          <td title="MELI ID: MLM123...">✅</td>
+        </tr>
+        <tr>
+          <td>Marco Puerta</td>
+          <td>MA-002</td>
+          <td>$450</td>
+          <td>20</td>
+          <td title="Pendiente: crear en MELI">⚪</td>
+        </tr>
+        <tr>
+          <td>Espejo Lateral</td>
+          <td>MA-003</td>
+          <td>$850</td>
+          <td>15</td>
+          <td title="Conflicto: stock diferente">⚠️</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 6. API Examples -->
+  <div class="demo-section">
+    <h2>6️⃣ Ejemplos de API</h2>
+
+    <div class="grid">
+      <div class="card">
+        <strong>Obtener Estado</strong>
+        <code>window.MELI.getState()</code>
+        <button class="btn" onclick="testGetState()">Test</button>
+      </div>
+
+      <div class="card">
+        <strong>Obtener Logs</strong>
+        <code>window.MELI.getLogs(10)</code>
+        <button class="btn" onclick="testGetLogs()">Test</button>
+      </div>
+
+      <div class="card">
+        <strong>Obtener Stats</strong>
+        <code>window.MELI.getStats()</code>
+        <button class="btn" onclick="testGetStats()">Test</button>
+      </div>
+
+      <div class="card">
+        <strong>Generar Auth URL</strong>
+        <code>window.MELI.getAuthUrl()</code>
+        <button class="btn" onclick="testAuthUrl()">Test</button>
+      </div>
+
+      <div class="card">
+        <strong>Sincronizar Ahora</strong>
+        <code>window.MELI.sync(almacen)</code>
+        <button class="btn" onclick="testSync()">Test</button>
+      </div>
+
+      <div class="card">
+        <strong>Desconectar</strong>
+        <code>window.MELI.logout()</code>
+        <button class="btn" onclick="testLogout()">Test</button>
+      </div>
+    </div>
+
+    <div class="output" id="apiOutput"></div>
+  </div>
+
+  <!-- 7. Mapping Examples -->
+  <div class="demo-section">
+    <h2>7️⃣ Ejemplos de Mapeo</h2>
+
+    <div class="note">
+      Los módulos de mapeo convierten productos automáticamente
+    </div>
+
+    <div class="code-block">
+// Mapeo Local → MercadoLibre
+const localProduct = {
+  id: 'prod_1',
+  nombre: 'Puerta Delantera Izquierda',
+  sku: 'MA-001',
+  precio: 1250,
+  stock: 50,
+  categoria: 'puertas_autos'
+};
+
+const meliProduct = window.MELI_MAPPER.mapLocalToMeli(localProduct);
+// Output:
+// {
+//   title: "Puerta Delantera Izquierda",
+//   category_id: "MLM6055",
+//   price: 1250,
+//   currency_id: "MXN",
+//   available_quantity: 50,
+//   seller_sku: "MA-001",
+//   ...
+// }
+    </div>
+
+    <div class="demo-controls">
+      <button class="btn" onclick="testMapping()">Test: Mapear Producto</button>
+    </div>
+
+    <div class="output" id="mappingOutput"></div>
+  </div>
+
+  <!-- 8. Testing Checklist -->
+  <div class="demo-section">
+    <h2>8️⃣ Testing Checklist</h2>
+
+    <div class="note">
+      Antes de usar en producción:
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <strong>✓ Scripts Cargados</strong>
+        <code>window.MELI !== undefined</code>
+        <button class="btn" onclick="checkScripts()">Check</button>
+      </div>
+
+      <div class="card">
+        <strong>✓ UI Disponible</strong>
+        <code>window.MELI_UI !== undefined</code>
+        <button class="btn" onclick="checkUI()">Check</button>
+      </div>
+
+      <div class="card">
+        <strong>✓ Mapper Disponible</strong>
+        <code>window.MELI_MAPPER !== undefined</code>
+        <button class="btn" onclick="checkMapper()">Check</button>
+      </div>
+
+      <div class="card">
+        <strong>✓ Config Modal</strong>
+        <code>Verificar que aparece sección MELI</code>
+        <button class="btn" onclick="checkConfigModal()">Check</button>
+      </div>
+    </div>
+
+    <div class="output" id="checkOutput"></div>
+  </div>
+
+  <!-- 9. Common Issues -->
+  <div class="demo-section">
+    <h2>9️⃣ Problemas Comunes</h2>
+
+    <h3>❌ "window.MELI is undefined"</h3>
+    <div class="warning">
+      <strong>Causa:</strong> Script no está cargado<br>
+      <strong>Solución:</strong> Verificar que <code>&lt;script src="api/mercadolibre-sync.js"&gt;&lt;/script&gt;</code> está en index.html
+    </div>
+
+    <h3>❌ "No MELI authentication"</h3>
+    <div class="warning">
+      <strong>Causa:</strong> Usuario no ha conectado con MELI<br>
+      <strong>Solución:</strong> Ir a Configuración → MercadoLibre → Conectar con MELI
+    </div>
+
+    <h3>❌ "Token expirado"</h3>
+    <div class="warning">
+      <strong>Causa:</strong> Token tiene 6 horas de vida<br>
+      <strong>Solución:</strong> Automático (se refresca), o desconectar/reconectar
+    </div>
+
+    <h3>✅ "Stock no sincroniza"</h3>
+    <div class="success">
+      <strong>Solución:</strong> Click "🔄 Sincronizar Ahora" o esperar 30 minutos
+    </div>
+  </div>
+
+  <!-- 10. Resources -->
+  <div class="demo-section">
+    <h2>🔟 Recursos</h2>
+
+    <div class="grid">
+      <div class="card">
+        <strong>📖 MERCADOLIBRE_SETUP.md</strong>
+        Setup de credenciales (20 min)
+      </div>
+
+      <div class="card">
+        <strong>📋 MERCADOLIBRE_API_GUIDE.md</strong>
+        Referencia técnica completa
+      </div>
+
+      <div class="card">
+        <strong>📊 INVENTORY_SYNC_FLOW.md</strong>
+        Flujo de sincronización detallado
+      </div>
+
+      <div class="card">
+        <strong>🔗 API MercadoLibre</strong>
+        https://developers.mercadolibre.com/
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Scripts para demo -->
+<script>
+  // Funciones de test (estas son solo para demo)
+
+  function log(id, message, type = 'info') {
+    const output = document.getElementById(id);
+    if (!output) return;
+
+    const timestamp = new Date().toLocaleTimeString();
+    const line = `[${timestamp}] ${message}`;
+    output.textContent += line + '\n';
+    output.scrollTop = output.scrollHeight;
+    output.className = `output ${type}`;
+  }
+
+  function testInit() {
+    log('initOutput', 'Testeando inicialización...');
+    if (typeof window.MELI !== 'undefined') {
+      const result = window.MELI.init();
+      log('initOutput', `✅ Inicialización exitosa`, 'success');
+    } else {
+      log('initOutput', '❌ window.MELI no está disponible', 'error');
+    }
+  }
+
+  function testState() {
+    log('initOutput', 'Obteniendo estado...', 'info');
+    if (typeof window.MELI !== 'undefined') {
+      const state = window.MELI.getState();
+      log('initOutput', `Estado: ${JSON.stringify(state, null, 2)}`, 'success');
+    } else {
+      log('initOutput', '❌ window.MELI no disponible', 'error');
+    }
+  }
+
+  function testGetState() {
+    log('apiOutput', 'getState()...');
+    if (typeof window.MELI !== 'undefined') {
+      const state = window.MELI.getState();
+      log('apiOutput', JSON.stringify(state, null, 2), 'success');
+    } else {
+      log('apiOutput', '❌ No disponible', 'error');
+    }
+  }
+
+  function testGetLogs() {
+    log('apiOutput', 'getLogs(5)...');
+    if (typeof window.MELI !== 'undefined') {
+      const logs = window.MELI.getLogs(5);
+      log('apiOutput', `${logs.length} logs encontrados: ${JSON.stringify(logs, null, 2)}`, 'success');
+    } else {
+      log('apiOutput', '❌ No disponible', 'error');
+    }
+  }
+
+  function testGetStats() {
+    log('apiOutput', 'getStats()...');
+    if (typeof window.MELI !== 'undefined') {
+      const stats = window.MELI.getStats();
+      log('apiOutput', JSON.stringify(stats, null, 2), 'success');
+    } else {
+      log('apiOutput', '❌ No disponible', 'error');
+    }
+  }
+
+  function testAuthUrl() {
+    log('apiOutput', 'getAuthUrl()...');
+    if (typeof window.MELI !== 'undefined') {
+      const url = window.MELI.getAuthUrl();
+      log('apiOutput', `URL: ${url}`, 'success');
+    } else {
+      log('apiOutput', '❌ No disponible', 'error');
+    }
+  }
+
+  function testSync() {
+    log('apiOutput', '⏳ Sincronizando...');
+    log('apiOutput', 'Nota: Necesita almacen[] cargado');
+  }
+
+  function testLogout() {
+    log('apiOutput', 'logout()...');
+    if (typeof window.MELI !== 'undefined') {
+      window.MELI.logout();
+      log('apiOutput', '✅ Sesión cerrada', 'success');
+    } else {
+      log('apiOutput', '❌ No disponible', 'error');
+    }
+  }
+
+  function testMapping() {
+    log('mappingOutput', 'Mapeando producto...');
+    if (typeof window.MELI_MAPPER !== 'undefined') {
+      const product = {
+        id: 'test_1',
+        nombre: 'Puerta Delantera',
+        sku: 'MA-TEST',
+        precio: 1250,
+        stock: 50,
+        categoria: 'puertas_autos'
+      };
+      const mapped = window.MELI_MAPPER.mapLocalToMeli(product);
+      log('mappingOutput', JSON.stringify(mapped, null, 2), 'success');
+    } else {
+      log('mappingOutput', '❌ window.MELI_MAPPER no disponible', 'error');
+    }
+  }
+
+  function showConfigExample() {
+    document.getElementById('configExample').style.display =
+      document.getElementById('configExample').style.display === 'none' ? 'block' : 'none';
+  }
+
+  function showDashboardExample() {
+    document.getElementById('dashboardExample').style.display =
+      document.getElementById('dashboardExample').style.display === 'none' ? 'block' : 'none';
+  }
+
+  function checkScripts() {
+    const output = document.getElementById('checkOutput');
+    output.className = 'output';
+    if (typeof window.MELI !== 'undefined') {
+      output.textContent = '✅ window.MELI está disponible';
+      output.className = 'output success';
+    } else {
+      output.textContent = '❌ window.MELI NO está disponible';
+      output.className = 'output error';
+    }
+  }
+
+  function checkUI() {
+    const output = document.getElementById('checkOutput');
+    output.className = 'output';
+    if (typeof window.MELI_UI !== 'undefined') {
+      output.textContent = '✅ window.MELI_UI está disponible';
+      output.className = 'output success';
+    } else {
+      output.textContent = '❌ window.MELI_UI NO está disponible';
+      output.className = 'output error';
+    }
+  }
+
+  function checkMapper() {
+    const output = document.getElementById('checkOutput');
+    output.className = 'output';
+    if (typeof window.MELI_MAPPER !== 'undefined') {
+      output.textContent = '✅ window.MELI_MAPPER está disponible';
+      output.className = 'output success';
+    } else {
+      output.textContent = '❌ window.MELI_MAPPER NO está disponible';
+      output.className = 'output error';
+    }
+  }
+
+  function checkConfigModal() {
+    const output = document.getElementById('checkOutput');
+    output.className = 'output';
+    output.textContent = 'Ver documentación MERCADOLIBRE_INTEGRATION_README.md para integración en modal';
+  }
+</script>
+
+</body>
+</html>

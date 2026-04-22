@@ -1,0 +1,286 @@
+<!-- ═════════════════════════════════════════════════════════════════
+     ADMIN PANEL - USUARIOS, ROLES Y ESTADÍSTICAS
+     ═════════════════════════════════════════════════════════════════ -->
+
+<div class="admin-container">
+  <!-- ═════════════════════════════════════════════════════════════════
+       TABS NAVIGATION
+       ═════════════════════════════════════════════════════════════════ -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchAdminTab('users')">👥 Usuarios</button>
+    <button class="admin-tab" onclick="switchAdminTab('roles')">🔐 Roles</button>
+    <button class="admin-tab" onclick="switchAdminTab('activity')">📋 Actividad</button>
+    <button class="admin-tab" onclick="switchAdminTab('stats')">📊 Analytics</button>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════════════
+       USUARIOS TAB
+       ═════════════════════════════════════════════════════════════════ -->
+  <div id="admin-users-tab" class="admin-tab-content active">
+    <div class="admin-section-header">
+      <h2>Gestión de Usuarios</h2>
+      <button class="btn btn-primary btn-sm" onclick="openNewUserForm()">+ Nuevo Usuario</button>
+    </div>
+
+    <div class="admin-filters">
+      <input type="text" id="userSearchInput" placeholder="Buscar usuario..." onkeyup="filterAdminUsers()" class="form-input">
+      <select id="userStatusFilter" onchange="filterAdminUsers()" class="form-input">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </div>
+
+    <div id="admin-users-list" class="admin-users-table">
+      <!-- Renderizado dinámicamente -->
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════════════
+       ROLES TAB
+       ═════════════════════════════════════════════════════════════════ -->
+  <div id="admin-roles-tab" class="admin-tab-content">
+    <div class="admin-section-header">
+      <h2>Asignación de Roles</h2>
+    </div>
+
+    <div class="admin-roles-grid">
+      <!-- Usuarios sin rol seleccionado -->
+      <div class="admin-role-section">
+        <h3>Sin Rol</h3>
+        <div id="admin-role-unassigned" class="admin-role-users">
+          <!-- Lista dinámica -->
+        </div>
+      </div>
+
+      <!-- Admin -->
+      <div class="admin-role-section">
+        <h3>👑 Administrador</h3>
+        <div id="admin-role-admin" class="admin-role-users">
+          <!-- Lista dinámica -->
+        </div>
+      </div>
+
+      <!-- Supervisor -->
+      <div class="admin-role-section">
+        <h3>🔍 Supervisor</h3>
+        <div id="admin-role-supervisor" class="admin-role-users">
+          <!-- Lista dinámica -->
+        </div>
+      </div>
+
+      <!-- Vendedor -->
+      <div class="admin-role-section">
+        <h3>💼 Vendedor</h3>
+        <div id="admin-role-vendedor" class="admin-role-users">
+          <!-- Lista dinámica -->
+        </div>
+      </div>
+
+      <!-- Bodeguero -->
+      <div class="admin-role-section">
+        <h3>📦 Bodeguero</h3>
+        <div id="admin-role-bodeguero" class="admin-role-users">
+          <!-- Lista dinámica -->
+        </div>
+      </div>
+
+      <!-- Cliente -->
+      <div class="admin-role-section">
+        <h3>🛍️ Cliente</h3>
+        <div id="admin-role-cliente" class="admin-role-users">
+          <!-- Lista dinámica -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════════════
+       ACTIVITY LOG TAB
+       ═════════════════════════════════════════════════════════════════ -->
+  <div id="admin-activity-tab" class="admin-tab-content">
+    <div class="admin-section-header">
+      <h2>Registro de Actividad</h2>
+      <button class="btn btn-secondary btn-sm" onclick="exportActivityLog()">📥 Exportar Log</button>
+    </div>
+
+    <div class="admin-filters">
+      <select id="activityTypeFilter" onchange="filterActivityLog()" class="form-input">
+        <option value="">Todos los eventos</option>
+        <option value="login">Login</option>
+        <option value="logout">Logout</option>
+        <option value="create">Crear</option>
+        <option value="update">Actualizar</option>
+        <option value="delete">Eliminar</option>
+      </select>
+      <input type="text" id="activityUserFilter" placeholder="Usuario..." onkeyup="filterActivityLog()" class="form-input">
+    </div>
+
+    <div id="admin-activity-list" class="admin-activity-table">
+      <!-- Renderizado dinámicamente -->
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════════════
+       ANALYTICS TAB
+       ═════════════════════════════════════════════════════════════════ -->
+  <div id="admin-stats-tab" class="admin-tab-content">
+    <div class="admin-section-header">
+      <h2>Analytics & KPIs</h2>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="admin-kpi-grid">
+      <div class="admin-kpi-card">
+        <div class="kpi-value" id="kpi-total-ventas">$0</div>
+        <div class="kpi-label">Ventas Totales</div>
+        <div class="kpi-change" id="kpi-total-ventas-change">↑ 0%</div>
+      </div>
+
+      <div class="admin-kpi-card">
+        <div class="kpi-value" id="kpi-usuarios-activos">0</div>
+        <div class="kpi-label">Usuarios Activos</div>
+        <div class="kpi-change" id="kpi-usuarios-activos-change">↑ 0%</div>
+      </div>
+
+      <div class="admin-kpi-card">
+        <div class="kpi-value" id="kpi-productos">0</div>
+        <div class="kpi-label">Productos</div>
+        <div class="kpi-change" id="kpi-productos-change">→ 0%</div>
+      </div>
+
+      <div class="admin-kpi-card">
+        <div class="kpi-value" id="kpi-clientes">0</div>
+        <div class="kpi-label">Clientes Registrados</div>
+        <div class="kpi-change" id="kpi-clientes-change">↑ 0%</div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="admin-charts-grid">
+      <div class="admin-chart-container">
+        <h3>Ventas por Período</h3>
+        <canvas id="chartVentasPeriodo"></canvas>
+      </div>
+
+      <div class="admin-chart-container">
+        <h3>Usuarios Activos</h3>
+        <canvas id="chartUsuariosActivos"></canvas>
+      </div>
+
+      <div class="admin-chart-container">
+        <h3>Productos Stock Bajo</h3>
+        <div id="chartProductosBajos" class="admin-list-chart"></div>
+      </div>
+
+      <div class="admin-chart-container">
+        <h3>Top 5 Vendedores</h3>
+        <div id="chartTopVendedores" class="admin-list-chart"></div>
+      </div>
+    </div>
+
+    <!-- Metrics Table -->
+    <div class="admin-metrics-section">
+      <h3>Métricas Detalladas</h3>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Métrica</th>
+            <th>Valor</th>
+            <th>Período</th>
+          </tr>
+        </thead>
+        <tbody id="admin-metrics-tbody">
+          <!-- Renderizado dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════════════
+     NEW USER MODAL
+     ═════════════════════════════════════════════════════════════════ -->
+<div id="admin-new-user-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Crear Nuevo Usuario</h2>
+      <button class="close-btn" onclick="closeAdminNewUserModal()">&times;</button>
+    </div>
+    <form id="adminNewUserForm" onsubmit="createAdminUser(event)" class="form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" required class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Nombre Completo</label>
+        <input type="text" name="nombre" required class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" name="password" required class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Rol</label>
+        <select name="role" required class="form-input">
+          <option value="">Seleccionar rol</option>
+          <option value="admin">Administrador</option>
+          <option value="supervisor">Supervisor</option>
+          <option value="vendedor">Vendedor</option>
+          <option value="bodeguero">Bodeguero</option>
+          <option value="cliente">Cliente</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Crear Usuario</button>
+        <button type="button" class="btn btn-secondary" onclick="closeAdminNewUserModal()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════════════
+     EDIT USER MODAL
+     ═════════════════════════════════════════════════════════════════ -->
+<div id="admin-edit-user-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Editar Usuario</h2>
+      <button class="close-btn" onclick="closeAdminEditUserModal()">&times;</button>
+    </div>
+    <form id="adminEditUserForm" onsubmit="updateAdminUser(event)" class="form">
+      <input type="hidden" id="editUserId" name="id">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="editUserEmail" name="email" required class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Nombre Completo</label>
+        <input type="text" id="editUserNombre" name="nombre" required class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="editUserStatus" name="activo" class="form-input">
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Rol</label>
+        <select id="editUserRole" name="role" class="form-input">
+          <option value="">Sin Rol</option>
+          <option value="admin">Administrador</option>
+          <option value="supervisor">Supervisor</option>
+          <option value="vendedor">Vendedor</option>
+          <option value="bodeguero">Bodeguero</option>
+          <option value="cliente">Cliente</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <button type="button" class="btn btn-danger" onclick="deleteAdminUser()">Eliminar Usuario</button>
+        <button type="button" class="btn btn-secondary" onclick="closeAdminEditUserModal()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
