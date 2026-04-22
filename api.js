@@ -461,6 +461,13 @@ async function importarExcel(e) {
   if (!file) return;
 
   try {
+    // Check if XLSX is available
+    if (typeof XLSX === 'undefined') {
+      toast('⚠ Cargando librería Excel...');
+      setTimeout(() => importarExcel(e), 500);
+      return;
+    }
+
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -494,11 +501,11 @@ async function importarExcel(e) {
     await syncAlmacenToSupabase();
     toast(`✅ Importados ${productos.length} productos`);
 
-    const fileInput = document.getElementById('excel-import');
+    const fileInput = document.getElementById('excel-import') || document.getElementById('converter-excel-file');
     if (fileInput) fileInput.value = '';
 
   } catch (e) {
-    toast('❌ Error al importar Excel');
+    toast('❌ Error al importar Excel: ' + (e.message || 'desconocido'));
     console.error('Excel import error:', e);
   }
 }
@@ -509,6 +516,11 @@ async function importarExcel(e) {
 
 window.addEventListener('load', () => {
   setTimeout(initSupabaseSimple, 500);
+  // Setup Excel converter file input
+  const converterInput = document.getElementById('converter-excel-file');
+  if (converterInput) {
+    converterInput.addEventListener('change', importarExcel);
+  }
 });
 
 // ═════════════════════════════════════════════════════════════════

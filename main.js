@@ -60,8 +60,8 @@ import {
   // OneDrive
   setupOneDriveSync, exportToOneDrive,
 
-  // Compac
-  exportCompac
+  // Compac & Import
+  exportCompac, importarExcel
 } from './api.js';
 
 import {
@@ -184,6 +184,7 @@ window.toast = toast;
 // Export functions
 window.exportCompac = exportCompac;
 window.renderMisFacturas = renderMisFacturas;
+window.importarExcel = importarExcel;
 
 // Form save handlers
 window.saveVenta = () => {
