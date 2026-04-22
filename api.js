@@ -23,8 +23,8 @@ async function initSupabaseSimple() {
     }
 
     sbClient = createClient(
-      'https://soxaujnpepkltpskdmkn.supabase.co',
-      'sb_publishable_zgvUjsY94XfU4r-Vmxy_fg_uDtJHXUz'
+      'https://uszflkegdshxmrrbrfkq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzemZsa2VnZHNoeG1ycmJyYnJma3EiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3Njg3Nzk4MywiZXhwIjoyMDkyNDUzOTgzfQ.a8zR4Anr_7fl50qI2yLIB2mBWn_tA2OcTMoIgBG-K_A'
     );
 
     sbReady = true;
